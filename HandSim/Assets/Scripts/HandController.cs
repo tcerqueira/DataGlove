@@ -36,8 +36,8 @@ public class HandController : MonoBehaviour
         s.e = e;
         s.u = u;
 
-        Debug.Log("listening for messages");
         u.BeginReceive(new AsyncCallback(OnReceive), s);
+        Debug.Log("Listening...");
     }
 
     // Update is called once per frame
