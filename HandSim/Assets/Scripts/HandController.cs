@@ -2,8 +2,19 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+using System.Net.Sockets;
+using System.Net;
+using System.Text;
+using System;
+
 public class HandController : MonoBehaviour
 {
+    public struct UdpState
+    {
+        public UdpClient u;
+        public IPEndPoint e;
+    }
+
     bool up = true;
     GameObject wrist;
     GameObject[] fingers = new GameObject[5];
@@ -17,7 +28,16 @@ public class HandController : MonoBehaviour
         fingers[3] = GameObject.Find("Ring/MetacarpophalangealJoint");
         fingers[4] = GameObject.Find("Pinky/MetacarpophalangealJoint");
 
-        
+        // Receive a message and write it to the console.
+        IPEndPoint e = new IPEndPoint(IPAddress.Any, 5433);
+        UdpClient u = new UdpClient(e);
+
+        UdpState s = new UdpState();
+        s.e = e;
+        s.u = u;
+
+        Debug.Log("listening for messages");
+        u.BeginReceive(new AsyncCallback(OnReceive), s);
     }
 
     // Update is called once per frame
@@ -44,5 +64,18 @@ public class HandController : MonoBehaviour
         {
             up = !up;
         }
+    }
+
+    private void OnReceive(IAsyncResult ar)
+    {
+        UdpState state = (UdpState)(ar.AsyncState);
+        UdpClient client = state.u;
+        IPEndPoint endpoint = state.e;
+
+        byte[] receiveBytes = client.EndReceive(ar, ref endpoint);
+        string receiveString = Encoding.ASCII.GetString(receiveBytes);
+
+        Debug.Log($"Received: {receiveString}");
+        client.BeginReceive(new AsyncCallback(OnReceive), state);
     }
 }
