@@ -19,40 +19,19 @@ public class HandController : MonoBehaviour
     {
         public Transform[] joints;
     }
-    
-    [Serializable]
-    public struct FingerPose
-    {
-        public SQuaternion[] joints;
-    }
 
-    [Serializable]
-    public struct HandPose
-    {
-        public SQuaternion wrist;
-        public FingerPose[] fingers;
-    }
-
-    // 
+    // Mutex for latest glove data
     readonly object gloveDataLock = new object();
     byte[] gloveData;
 
     Boolean up = true;
-    Transform wrist;
-    Finger[] fingers = new Finger[5];
+    public Transform wrist;
+    public Finger[] fingers = new Finger[5];
+    public Transform[] fingerRoots;
 
     // Start is called before the first frame update
     void Start()
     {
-        wrist = GameObject.Find("/KnobbyHand/Arm/Wrist").transform;
-        Transform[] fingerRoots = new Transform[] {
-            GameObject.Find("Thumb").transform,
-            GameObject.Find("Index").transform,
-            GameObject.Find("Middle").transform,
-            GameObject.Find("Ring").transform,
-            GameObject.Find("Pinky").transform,
-        };
-
         for (int i = 0; i < 5; i++)
         {
             fingers[i].joints = new Transform[3];
@@ -65,8 +44,10 @@ public class HandController : MonoBehaviour
             }
         }
 
-        // HandPose pose = new HandPose {
-        //     wrist = new SQuaternion(0,0,1,1),
+        // Test JSON parsing
+        // HandPose pose = new HandPose
+        // {
+        //     wrist = new SQuaternion(0, 0, 1, 1),
         //     fingers = new FingerPose[] {
         //         new FingerPose { joints = new SQuaternion[]{ new SQuaternion(1,0,0,1), new SQuaternion(0,0,0,0), new SQuaternion(0,0,0,0) }},
         //         new FingerPose { joints = new SQuaternion[]{ new SQuaternion(1,0,0,1), new SQuaternion(0,0,0,0), new SQuaternion(0,0,0,0) }},
@@ -94,10 +75,10 @@ public class HandController : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
-        if(up)
+        if (up)
         {
             wrist.Rotate(Vector3.forward * 60 * Time.deltaTime);
-            foreach(Finger finger in fingers)
+            foreach (Finger finger in fingers)
             {
                 finger.joints[0].Rotate(Vector3.right * 90 * Time.deltaTime);
             }
@@ -105,13 +86,13 @@ public class HandController : MonoBehaviour
         else
         {
             wrist.Rotate(Vector3.back * 60 * Time.deltaTime);
-            foreach(Finger finger in fingers)
+            foreach (Finger finger in fingers)
             {
                 finger.joints[0].Rotate(Vector3.left * 90 * Time.deltaTime);
             }
         }
 
-        if(wrist.eulerAngles.z >= 90 || wrist.eulerAngles.z <= 0)
+        if (wrist.eulerAngles.z >= 90 || wrist.eulerAngles.z <= 0)
         {
             up = !up;
         }
@@ -134,14 +115,27 @@ public class HandController : MonoBehaviour
         client.BeginReceive(new AsyncCallback(OnReceive), state);
     }
 
-    private void ParseGloveData()
+    private HandPose? ParseGloveData()
     {
-
+        return null;
     }
 }
 
+[Serializable]
+public struct FingerPose
+{
+    public SQuaternion[] joints;
+}
+
+[Serializable]
+public struct HandPose
+{
+    public SQuaternion wrist;
+    public FingerPose[] fingers;
+}
+
 // Serializable Quaternion
-[System.Serializable]
+[Serializable]
 public struct SQuaternion
 {
     public float x;
