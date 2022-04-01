@@ -19,7 +19,25 @@ public class HandController : MonoBehaviour
     {
         public Transform[] joints;
     }
+    
+    [Serializable]
+    public struct FingerPose
+    {
+        public SQuaternion[] joints;
+    }
 
+    [Serializable]
+    public struct HandPose
+    {
+        public SQuaternion wrist;
+        public FingerPose[] fingers;
+    }
+
+    // 
+    readonly object gloveDataLock = new object();
+    byte[] gloveData;
+
+    Boolean up = true;
     Transform wrist;
     Finger[] fingers = new Finger[5];
 
@@ -35,16 +53,31 @@ public class HandController : MonoBehaviour
             GameObject.Find("Pinky").transform,
         };
 
-        for(int i = 0; i < 5; i++)
+        for (int i = 0; i < 5; i++)
         {
             fingers[i].joints = new Transform[3];
             fingers[i].joints[0] = fingerRoots[i].Find("MetacarpophalangealJoint");
             fingers[i].joints[1] = fingers[i].joints[0].Find("Proximal/ProximalinterphalangealJoint");
             fingers[i].joints[2] = fingers[i].joints[1].Find("Intermediate/DistalinterphalangealJoint");
-            if(!fingers[i].joints[0] || !fingers[i].joints[1] || !fingers[i].joints[2]) {
+            if (!fingers[i].joints[0] || !fingers[i].joints[1] || !fingers[i].joints[2])
+            {
                 Debug.Log($"Error finding joints: Finger {i}");
             }
         }
+
+        // HandPose pose = new HandPose {
+        //     wrist = new SQuaternion(0,0,1,1),
+        //     fingers = new FingerPose[] {
+        //         new FingerPose { joints = new SQuaternion[]{ new SQuaternion(1,0,0,1), new SQuaternion(0,0,0,0), new SQuaternion(0,0,0,0) }},
+        //         new FingerPose { joints = new SQuaternion[]{ new SQuaternion(1,0,0,1), new SQuaternion(0,0,0,0), new SQuaternion(0,0,0,0) }},
+        //         new FingerPose { joints = new SQuaternion[]{ new SQuaternion(1,0,0,1), new SQuaternion(0,0,0,0), new SQuaternion(0,0,0,0) }},
+        //         new FingerPose { joints = new SQuaternion[]{ new SQuaternion(1,0,0,1), new SQuaternion(0,0,0,0), new SQuaternion(0,0,0,0) }},
+        //         new FingerPose { joints = new SQuaternion[]{ new SQuaternion(1,0,0,1), new SQuaternion(0,0,0,0), new SQuaternion(0,0,0,0) }}
+        //     }
+        // };
+        // String poseStr = JsonUtility.ToJson(pose);
+        // HandPose pose2 = JsonUtility.FromJson<HandPose>(poseStr);
+        // Debug.Log(pose2);
 
         // Receive a message and write it to the console.
         IPEndPoint e = new IPEndPoint(IPAddress.Any, 5433);
@@ -61,27 +94,27 @@ public class HandController : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
-        // if(up)
-        // {
-        //     transform.Rotate(Vector3.forward * 60 * Time.deltaTime);
-        //     foreach(GameObject finger in fingers)
-        //     {
-        //         finger.transform.Rotate(Vector3.right * 90 * Time.deltaTime);
-        //     }
-        // }
-        // else
-        // {
-        //     transform.Rotate(Vector3.back * 60 * Time.deltaTime);
-        //     foreach(GameObject finger in fingers)
-        //     {
-        //         finger.transform.Rotate(Vector3.left * 90 * Time.deltaTime);
-        //     }
-        // }
+        if(up)
+        {
+            wrist.Rotate(Vector3.forward * 60 * Time.deltaTime);
+            foreach(Finger finger in fingers)
+            {
+                finger.joints[0].Rotate(Vector3.right * 90 * Time.deltaTime);
+            }
+        }
+        else
+        {
+            wrist.Rotate(Vector3.back * 60 * Time.deltaTime);
+            foreach(Finger finger in fingers)
+            {
+                finger.joints[0].Rotate(Vector3.left * 90 * Time.deltaTime);
+            }
+        }
 
-        // if(transform.eulerAngles.z >= 90 || transform.eulerAngles.z <= 0)
-        // {
-        //     up = !up;
-        // }
+        if(wrist.eulerAngles.z >= 90 || wrist.eulerAngles.z <= 0)
+        {
+            up = !up;
+        }
     }
 
     private void OnReceive(IAsyncResult ar)
@@ -90,10 +123,52 @@ public class HandController : MonoBehaviour
         UdpClient client = state.u;
         IPEndPoint endpoint = state.e;
 
-        byte[] receiveBytes = client.EndReceive(ar, ref endpoint);
+        lock (gloveDataLock)
+        {
+            gloveData = client.EndReceive(ar, ref endpoint);
+        }
+        byte[] receiveBytes = (byte[])gloveData.Clone();
         string receiveString = Encoding.ASCII.GetString(receiveBytes);
 
         Debug.Log($"Received: {receiveString}");
         client.BeginReceive(new AsyncCallback(OnReceive), state);
+    }
+
+    private void ParseGloveData()
+    {
+
+    }
+}
+
+// Serializable Quaternion
+[System.Serializable]
+public struct SQuaternion
+{
+    public float x;
+    public float y;
+    public float z;
+    public float w;
+
+    public SQuaternion(float rX, float rY, float rZ, float rW)
+    {
+        x = rX;
+        y = rY;
+        z = rZ;
+        w = rW;
+    }
+
+    public override string ToString()
+    {
+        return String.Format("[{0}, {1}, {2}, {3}]", x, y, z, w);
+    }
+
+    public static implicit operator Quaternion(SQuaternion rValue)
+    {
+        return new Quaternion(rValue.x, rValue.y, rValue.z, rValue.w);
+    }
+
+    public static implicit operator SQuaternion(Quaternion rValue)
+    {
+        return new SQuaternion(rValue.x, rValue.y, rValue.z, rValue.w);
     }
 }
