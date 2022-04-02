@@ -23,8 +23,8 @@ public class HandController : MonoBehaviour
     // Mutex for latest glove data
     readonly object gloveDataLock = new object();
     byte[] gloveData;
+    Boolean received = false;
 
-    Boolean up = true;
     public Transform wrist;
     public Finger[] fingers = new Finger[5];
     public Transform[] fingerRoots;
@@ -44,6 +44,17 @@ public class HandController : MonoBehaviour
             }
         }
 
+        // Receive a message and write it to the console.
+        IPEndPoint e = new IPEndPoint(IPAddress.Any, 5433);
+        UdpClient u = new UdpClient(e);
+
+        UdpState s = new UdpState();
+        s.e = e;
+        s.u = u;
+
+        u.BeginReceive(new AsyncCallback(OnReceive), s);
+        Debug.Log("Listening...");
+
         // Test JSON parsing
         // HandPose pose = new HandPose
         // {
@@ -58,43 +69,30 @@ public class HandController : MonoBehaviour
         // };
         // String poseStr = JsonUtility.ToJson(pose);
         // HandPose pose2 = JsonUtility.FromJson<HandPose>(poseStr);
-        // Debug.Log(pose2);
-
-        // Receive a message and write it to the console.
-        IPEndPoint e = new IPEndPoint(IPAddress.Any, 5433);
-        UdpClient u = new UdpClient(e);
-
-        UdpState s = new UdpState();
-        s.e = e;
-        s.u = u;
-
-        u.BeginReceive(new AsyncCallback(OnReceive), s);
-        Debug.Log("Listening...");
+        // Debug.Log(poseStr);
     }
 
     // Update is called once per frame
     void FixedUpdate()
     {
-        if (up)
+        Boolean shouldUpdate = true;
+        lock(gloveDataLock)
         {
-            wrist.Rotate(Vector3.forward * 60 * Time.deltaTime);
-            foreach (Finger finger in fingers)
-            {
-                finger.joints[0].Rotate(Vector3.right * 90 * Time.deltaTime);
-            }
-        }
-        else
-        {
-            wrist.Rotate(Vector3.back * 60 * Time.deltaTime);
-            foreach (Finger finger in fingers)
-            {
-                finger.joints[0].Rotate(Vector3.left * 90 * Time.deltaTime);
-            }
+            if(!received)
+                shouldUpdate = false;
         }
 
-        if (wrist.eulerAngles.z >= 90 || wrist.eulerAngles.z <= 0)
+        if(shouldUpdate)
         {
-            up = !up;
+            HandPose pose = ParseGloveData();
+            wrist.localRotation = (Quaternion)pose.wrist;
+            for (int i=0; i < 5; i++)
+            {
+                for (int j=0; j < 3; j++)
+                {
+                    fingers[i].joints[j].localRotation = (Quaternion)pose.fingers[i].joints[j];
+                } 
+            }
         }
     }
 
@@ -107,17 +105,24 @@ public class HandController : MonoBehaviour
         lock (gloveDataLock)
         {
             gloveData = client.EndReceive(ar, ref endpoint);
+            received = true;
         }
         byte[] receiveBytes = (byte[])gloveData.Clone();
         string receiveString = Encoding.ASCII.GetString(receiveBytes);
 
-        Debug.Log($"Received: {receiveString}");
         client.BeginReceive(new AsyncCallback(OnReceive), state);
     }
 
-    private HandPose? ParseGloveData()
+    private HandPose ParseGloveData()
     {
-        return null;
+        byte[] rawData;
+        lock (gloveDataLock)
+        {
+            rawData = (byte[])gloveData.Clone();
+            received = false;
+        }
+        string dataJSON = Encoding.ASCII.GetString(rawData);
+        return JsonUtility.FromJson<HandPose>(dataJSON);
     }
 }
 
