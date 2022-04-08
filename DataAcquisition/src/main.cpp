@@ -8,27 +8,27 @@ void setup()
 {
 	/* Serial to display data */
 	Serial.begin(115200);
-	while (!Serial) {}
+	while(!Serial) {}
 	/* Start the SPI bus */
 	SPI.begin();
 	/* Initialize and configure IMU */
-	if (!imu.Begin())
+	if(!imu.Begin())
 	{
 		Serial.println("Error initializing communication with IMU");
-		while (1) {}
+		while(1) {}
 	}
 	/* Set the sample rate divider */
-	if (!imu.ConfigSrd(19))
+	if(!imu.ConfigSrd(19))
 	{
 		Serial.println("Error configured SRD");
-		while (1) {}
+		while(1) {}
 	}
 }
 
 void loop()
 {
 	/* Check if data read */
-	if (imu.Read())
+	if(imu.Read())
 	{
 		Serial.print(imu.new_imu_data());
 		Serial.print("\t");
