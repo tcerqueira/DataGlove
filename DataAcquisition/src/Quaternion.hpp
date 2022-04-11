@@ -5,9 +5,8 @@ struct Quaternion
 {
     float x, y, z, w;
 
-    JsonObject serialize(JsonObject parent)
+    JsonObject serialize(JsonObject obj)
     {
-        JsonObject obj = parent.createNestedObject("Quaternion");
         obj["x"] = x;
         obj["y"] = y;
         obj["z"] = z;
@@ -25,10 +24,10 @@ struct Quaternion
         return obj;
     }
 
-    template<unsigned int C>
-    JsonObject serialize(StaticJsonDocument<C> parent)
+    template<unsigned int Capacity>
+    JsonObject serialize(StaticJsonDocument<Capacity> parent)
     {
-        JsonObject obj = parent["wrist"];
+        JsonObject obj = parent.createNestedObject();
         obj["x"] = x;
         obj["y"] = y;
         obj["z"] = z;

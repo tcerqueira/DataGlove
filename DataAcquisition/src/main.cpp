@@ -46,6 +46,10 @@ void setup()
 
 void loop()
 {
+    
+    String str;
+    hand.serialize(str);
+    Serial.print(str);
     if(imu2.Read())
     {
         // Serial.print("IMU 2:");
@@ -97,7 +101,4 @@ void loop()
         // Serial.print(imu.die_temp_c());
         // Serial.print("\n");
     }
-    String str;
-    hand.serialize(str);
-    Serial.println(str);
 }

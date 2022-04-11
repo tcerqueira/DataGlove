@@ -18,5 +18,5 @@ public:
 private:
     Quaternion wrist;
     Finger fingers[5];
-    StaticJsonDocument<500> encoded;
+    StaticJsonDocument<4096> encoded;
 };

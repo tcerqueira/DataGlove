@@ -5,13 +5,15 @@
 
 Hand::Hand()
 {
-    wrist.serialize(encoded);
+    // Wrist JSON
+    JsonObject wristObj = encoded.createNestedObject("wrist");
+    wrist.serialize(wristObj);
+    // Fingers JSON
     JsonArray fingersArr = encoded.createNestedArray("fingers");
     for(uint8_t i=0; i < 5; i++)
     {
         JsonObject fingerObj = fingersArr.createNestedObject();
         JsonArray jointsArr = fingerObj.createNestedArray("joints");
-        fingersArr.add(fingerObj);
         for(uint8_t j=0; j < 3; j++)
         {
             fingers[i].joints[j].serialize(jointsArr);
@@ -31,5 +33,6 @@ Quaternion& Hand::getWrist()
 
 void Hand::serialize(String &outStr)
 {
-    outStr = serializeJson(encoded, Serial);
+    serializeJson(encoded, outStr);
+    outStr += '\n';
 }
