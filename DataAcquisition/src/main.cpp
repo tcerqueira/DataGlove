@@ -1,12 +1,14 @@
 #include <Arduino.h>
 // #define DISABLE_MPU9250_FIFO
 #include "mpu9250.h"
+#include "Hand.h"
 
 extern "C" uint32_t set_arm_clock(uint32_t frequency);
 
 /* Mpu9250 object, SPI bus, CS on pin 10 */
 bfs::Mpu9250 imu(&SPI, 10);
 bfs::Mpu9250 imu2(&SPI, 9);
+Hand hand;
 
 void setup()
 {
@@ -46,53 +48,56 @@ void loop()
 {
     if(imu2.Read())
     {
-        Serial.print("IMU 2:");
-        Serial.print("\t");
-        Serial.print(imu2.accel_x_mps2());
-        Serial.print("\t");
-        Serial.print(imu2.accel_y_mps2());
-        Serial.print("\t");
-        Serial.print(imu2.accel_z_mps2());
-        Serial.print("\t");
-        Serial.print(imu2.gyro_x_radps());
-        Serial.print("\t");
-        Serial.print(imu2.gyro_y_radps());
-        Serial.print("\t");
-        Serial.print(imu2.gyro_z_radps());
-        Serial.print("\t");
-        Serial.print(imu2.mag_x_ut());
-        Serial.print("\t");
-        Serial.print(imu2.mag_y_ut());
-        Serial.print("\t");
-        Serial.print(imu2.mag_z_ut());
-        Serial.print("\t");
-        Serial.print(imu2.die_temp_c());
-        Serial.print("\n");
+        // Serial.print("IMU 2:");
+        // Serial.print("\t");
+        // Serial.print(imu2.accel_x_mps2());
+        // Serial.print("\t");
+        // Serial.print(imu2.accel_y_mps2());
+        // Serial.print("\t");
+        // Serial.print(imu2.accel_z_mps2());
+        // Serial.print("\t");
+        // Serial.print(imu2.gyro_x_radps());
+        // Serial.print("\t");
+        // Serial.print(imu2.gyro_y_radps());
+        // Serial.print("\t");
+        // Serial.print(imu2.gyro_z_radps());
+        // Serial.print("\t");
+        // Serial.print(imu2.mag_x_ut());
+        // Serial.print("\t");
+        // Serial.print(imu2.mag_y_ut());
+        // Serial.print("\t");
+        // Serial.print(imu2.mag_z_ut());
+        // Serial.print("\t");
+        // Serial.print(imu2.die_temp_c());
+        // Serial.print("\n");
     }
 
     if(imu.Read())
     {
-        Serial.print("IMU 1:");
-        Serial.print("\t");
-        Serial.print(imu.accel_x_mps2());
-        Serial.print("\t");
-        Serial.print(imu.accel_y_mps2());
-        Serial.print("\t");
-        Serial.print(imu.accel_z_mps2());
-        Serial.print("\t");
-        Serial.print(imu.gyro_x_radps());
-        Serial.print("\t");
-        Serial.print(imu.gyro_y_radps());
-        Serial.print("\t");
-        Serial.print(imu.gyro_z_radps());
-        Serial.print("\t");
-        Serial.print(imu.mag_x_ut());
-        Serial.print("\t");
-        Serial.print(imu.mag_y_ut());
-        Serial.print("\t");
-        Serial.print(imu.mag_z_ut());
-        Serial.print("\t");
-        Serial.print(imu.die_temp_c());
-        Serial.print("\n");
+        // Serial.print("IMU 1:");
+        // Serial.print("\t");
+        // Serial.print(imu.accel_x_mps2());
+        // Serial.print("\t");
+        // Serial.print(imu.accel_y_mps2());
+        // Serial.print("\t");
+        // Serial.print(imu.accel_z_mps2());
+        // Serial.print("\t");
+        // Serial.print(imu.gyro_x_radps());
+        // Serial.print("\t");
+        // Serial.print(imu.gyro_y_radps());
+        // Serial.print("\t");
+        // Serial.print(imu.gyro_z_radps());
+        // Serial.print("\t");
+        // Serial.print(imu.mag_x_ut());
+        // Serial.print("\t");
+        // Serial.print(imu.mag_y_ut());
+        // Serial.print("\t");
+        // Serial.print(imu.mag_z_ut());
+        // Serial.print("\t");
+        // Serial.print(imu.die_temp_c());
+        // Serial.print("\n");
     }
+    String str;
+    hand.serialize(str);
+    Serial.println(str);
 }
