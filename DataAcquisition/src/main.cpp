@@ -46,59 +46,24 @@ void setup()
 
 void loop()
 {
-    
-    String str;
-    hand.serialize(str);
-    Serial.print(str);
     if(imu2.Read())
     {
-        // Serial.print("IMU 2:");
-        // Serial.print("\t");
-        // Serial.print(imu2.accel_x_mps2());
-        // Serial.print("\t");
-        // Serial.print(imu2.accel_y_mps2());
-        // Serial.print("\t");
-        // Serial.print(imu2.accel_z_mps2());
-        // Serial.print("\t");
-        // Serial.print(imu2.gyro_x_radps());
-        // Serial.print("\t");
-        // Serial.print(imu2.gyro_y_radps());
-        // Serial.print("\t");
-        // Serial.print(imu2.gyro_z_radps());
-        // Serial.print("\t");
-        // Serial.print(imu2.mag_x_ut());
-        // Serial.print("\t");
-        // Serial.print(imu2.mag_y_ut());
-        // Serial.print("\t");
-        // Serial.print(imu2.mag_z_ut());
-        // Serial.print("\t");
-        // Serial.print(imu2.die_temp_c());
-        // Serial.print("\n");
+        
     }
 
     if(imu.Read())
     {
-        // Serial.print("IMU 1:");
-        // Serial.print("\t");
-        // Serial.print(imu.accel_x_mps2());
-        // Serial.print("\t");
-        // Serial.print(imu.accel_y_mps2());
-        // Serial.print("\t");
-        // Serial.print(imu.accel_z_mps2());
-        // Serial.print("\t");
-        // Serial.print(imu.gyro_x_radps());
-        // Serial.print("\t");
-        // Serial.print(imu.gyro_y_radps());
-        // Serial.print("\t");
-        // Serial.print(imu.gyro_z_radps());
-        // Serial.print("\t");
-        // Serial.print(imu.mag_x_ut());
-        // Serial.print("\t");
-        // Serial.print(imu.mag_y_ut());
-        // Serial.print("\t");
-        // Serial.print(imu.mag_z_ut());
-        // Serial.print("\t");
-        // Serial.print(imu.die_temp_c());
-        // Serial.print("\n");
+        Eigen::Vector3d dRot[3];
+        double dx = imu.gyro_x_radps();
+        double dy = imu.gyro_y_radps();
+        double dz = imu.gyro_z_radps();
+        dRot[0] = Eigen::Vector3d(dx, dy, dz);
+        dRot[1] = Eigen::Vector3d(dx, dy, dz);
+        dRot[2] = Eigen::Vector3d(dx, dy, dz);
+        hand.updateWrist(dRot[0]);
     }
+
+    String payload;
+    hand.serialize(payload);
+    Serial.print(payload);
 }
