@@ -2,6 +2,7 @@
 // #define DISABLE_MPU9250_FIFO
 #include "mpu9250.h"
 #include "Hand.h"
+#include "Imu.h"
 
 extern "C" uint32_t set_arm_clock(uint32_t frequency);
 
