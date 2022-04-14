@@ -67,6 +67,6 @@ void Hand::updateWrist(const Eigen::Vector3d &dRotation)
     Quaternion q = Eigen::AngleAxisd(dRotation.x(), Eigen::Vector3d::UnitX())
                    * Eigen::AngleAxisd(dRotation.y(), Eigen::Vector3d::UnitY())
                    * Eigen::AngleAxisd(dRotation.z(), Eigen::Vector3d::UnitZ());
-
+    
     wrist *= q;
 }
