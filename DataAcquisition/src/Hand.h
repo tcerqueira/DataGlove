@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 struct Finger {
-    Quaternion joints[3];
+    Eigen::Vector3d joints[3];
 };
 
 class Hand
@@ -20,13 +20,13 @@ public:
 public:
     Hand();
     Finger& getFinger(uint8_t index);
-    Quaternion& getWrist();
+    Eigen::Vector3d& getWrist();
     void serialize(String &outStr);
     void updateFinger(FingerId id, const Eigen::Vector3d dRotations[]);
     void updateWrist(const Eigen::Vector3d &dRotation);
 
 private:
-    Quaternion wrist;
+    Eigen::Vector3d wrist;
     Finger fingers[5];
     StaticJsonDocument<4096> encoded;
 };

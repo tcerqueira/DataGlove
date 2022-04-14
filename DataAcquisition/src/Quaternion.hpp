@@ -29,6 +29,20 @@ public:
         return *this;
     }
 
+    inline static Quaternion fromEuler(const Eigen::Vector3d &euler)
+    {
+        return Eigen::AngleAxisd(euler.x(), Eigen::Vector3d::UnitX())
+               * Eigen::AngleAxisd(euler.y(), Eigen::Vector3d::UnitY())
+               * Eigen::AngleAxisd(euler.z(), Eigen::Vector3d::UnitZ());
+    }
+
+    inline static Quaternion fromEuler(double x, double y, double z)
+    {
+        return Eigen::AngleAxisd(x, Eigen::Vector3d::UnitX())
+               * Eigen::AngleAxisd(y, Eigen::Vector3d::UnitY())
+               * Eigen::AngleAxisd(z, Eigen::Vector3d::UnitZ());
+    }
+
     JsonObject serialize(JsonObject obj)
     {
         obj["x"] = x();
