@@ -4,60 +4,66 @@
 #include "Hand.h"
 #include "Imu.h"
 
-extern "C" uint32_t set_arm_clock(uint32_t frequency);
+#define NUMIMUS 2
 
-/* Mpu9250 object, SPI bus, CS on pin 10 */
-bfs::Mpu9250 imu(&SPI, 10);
-bfs::Mpu9250 imu2(&SPI, 9);
+// extern "C" uint32_t set_arm_clock(uint32_t frequency);
+
+// /* Mpu9250 object, SPI bus, CS on pin 10 */
+// bfs::Mpu9250 imu(&SPI, 10);
+// bfs::Mpu9250 imu2(&SPI, 9);
+
+/* Mpu9250 object */
+bfs::Mpu9250 imus[NUMIMUS] = {
+    bfs::Mpu9250(&Wire, bfs::Mpu9250::I2C_ADDR_PRIM),
+    bfs::Mpu9250(&Wire, bfs::Mpu9250::I2C_ADDR_SEC)
+};
 Hand hand;
 
-void setup()
-{
-    // Set clock speed (https://forum.pjrc.com/threads/58688-Teensy-4-0-Clock-speed-influences-delay-and-SPI)
-    set_arm_clock(396000000);
+void setup() {
     /* Serial to display data */
     Serial.begin(115200);
     while(!Serial) {}
+    // ############# SPI #############
+    // Set clock speed (https://forum.pjrc.com/threads/58688-Teensy-4-0-Clock-speed-influences-delay-and-SPI)
+    // set_arm_clock(396000000);
     /* Start the SPI bus */
-    SPI.begin();
+    // SPI.begin();
+    // ############# I2C #############
+    /* Start the I2C bus */
+    Wire.begin();
+    Wire.setClock(400000);
     /* Initialize and configure IMU */
-    if(!imu.Begin())
+    for(uint8_t i=0; i < NUMIMUS; i++)
     {
-        Serial.println("Error initializing communication with IMU1");
-        while(1) {}
-    }
-    /* Set the sample rate divider */
-    if(!imu.ConfigSrd(19))
-    {
-        Serial.println("Error configured SRD");
-        while(1) {}
-    }
-    if(!imu2.Begin())
-    {
-        Serial.println("Error initializing communication with IMU2");
-        while(1) {}
-    }
-    /* Set the sample rate divider */
-    if(!imu2.ConfigSrd(19))
-    {
-        Serial.println("Error configured SRD");
-        while(1) {}
+        Serial.print("Initializing IMU-");
+        Serial.println(i);
+        if(!imus[i].Begin())
+        {
+            Serial.print("Error initializing communication with IMU");
+            while(1) {}
+        }
+        /* Set the sample rate divider */
+        if(!imus[i].ConfigSrd(19))
+        {
+            Serial.println("Error configured SRD");
+            while(1) {}
+        }
     }
 }
 
-void loop()
-{
-    if(imu2.Read())
+void loop() {
+    for(uint8_t i=0; i < NUMIMUS; i++)
     {
-        
+        imus[i].Read();
     }
-
-    if(imu.Read())
+    
+    if(imus[0].new_imu_data())
     {
+        // https://www.youtube.com/watch?v=CHSYgLfhwUo
         Eigen::Vector3d dRot[3];
-        double dx = imu.gyro_x_radps();
-        double dy = imu.gyro_y_radps();
-        double dz = imu.gyro_z_radps();
+        double dx = imus[0].gyro_x_radps() * .05;
+        double dy = imus[0].gyro_y_radps() * .05;
+        double dz = imus[0].gyro_z_radps() * .05;
         dRot[0] = Eigen::Vector3d(dx, dy, dz);
         dRot[1] = Eigen::Vector3d(dx, dy, dz);
         dRot[2] = Eigen::Vector3d(dx, dy, dz);
@@ -68,3 +74,4 @@ void loop()
     hand.serialize(payload);
     Serial.print(payload);
 }
+
