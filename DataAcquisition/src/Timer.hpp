@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+#include <Arduino.h>
 
 class Timer
 {
@@ -38,4 +39,4 @@ public:
 private:
     uint32_t started;
     uint32_t stopped = 0;
-}
+};
