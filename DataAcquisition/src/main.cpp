@@ -13,9 +13,9 @@
 // bfs::Mpu9250 imu2(&SPI, 9);
 
 /* Mpu9250 object */
-bfs::Mpu9250 imus[NUMIMUS] = {
-    bfs::Mpu9250(&Wire, bfs::Mpu9250::I2C_ADDR_PRIM),
-    bfs::Mpu9250(&Wire, bfs::Mpu9250::I2C_ADDR_SEC)
+Imu imus[NUMIMUS] = {
+    Imu(&Wire, bfs::Mpu9250::I2C_ADDR_PRIM),
+    Imu(&Wire, bfs::Mpu9250::I2C_ADDR_SEC)
 };
 Hand hand;
 
@@ -35,39 +35,23 @@ void setup() {
     /* Initialize and configure IMU */
     for(uint8_t i=0; i < NUMIMUS; i++)
     {
-        Serial.print("Initializing IMU-");
-        Serial.println(i);
-        if(!imus[i].Begin())
-        {
-            Serial.print("Error initializing communication with IMU");
-            while(1) {}
-        }
-        /* Set the sample rate divider */
-        if(!imus[i].ConfigSrd(19))
-        {
-            Serial.println("Error configured SRD");
-            while(1) {}
-        }
+        imus[i].init();
+        imus[i].calibrate();
     }
 }
 
 void loop() {
     for(uint8_t i=0; i < NUMIMUS; i++)
     {
-        imus[i].Read();
+        imus[i].read();
     }
     
-    if(imus[0].new_imu_data())
+    if(imus[0].new_data())
     {
-        // https://www.youtube.com/watch?v=CHSYgLfhwUo
-        Eigen::Vector3d dRot[3];
-        double dx = imus[0].gyro_x_radps() * .05;
-        double dy = imus[0].gyro_y_radps() * .05;
-        double dz = imus[0].gyro_z_radps() * .05;
-        dRot[0] = Eigen::Vector3d(dx, dy, dz);
-        dRot[1] = Eigen::Vector3d(dx, dy, dz);
-        dRot[2] = Eigen::Vector3d(dx, dy, dz);
-        hand.updateWrist(dRot[0]);
+        double dx = imus[0].gyro_x();
+        double dy = imus[0].gyro_y();
+        double dz = imus[0].gyro_z();
+        hand.updateWrist(Eigen::Vector3d(dx, dy, dz));
     }
 
     String payload;
