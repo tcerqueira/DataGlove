@@ -26,19 +26,25 @@ public:
     double gyro_y()  { return gyro_drad[1];  }
     double gyro_z()  { return gyro_drad[2];  }
     bool new_data()  { return recv_new;      }
+
+private:
+    void push_accel_buffer(float ax, float ay, float az);
     
+public:
+    static constexpr uint8_t I2C_ADDR_PRIM = 0x68;
+    static constexpr uint8_t I2C_ADDR_SEC = 0x69;
+    static constexpr const uint8_t accel_buffer_len = 12;
+
 private:
     bfs::Mpu9250 imu;
     Protocol protocol;
     double accel_mps2[3];
     double gyro_drad[3];
-    double accel_offset[3];
-    double gyro_offset[3];
+    double accel_offset[3] = {};
+    double gyro_offset[3] = {};
+    float accel_buffer[3][accel_buffer_len] = {{},{},{}};
+    uint8_t accel_buffer_index = 0;
     bool recv_new = false;
     uint32_t delta_us = 1000;
     Timer timer;
-
-public:
-    static constexpr uint8_t I2C_ADDR_PRIM = 0x68;
-    static constexpr uint8_t I2C_ADDR_SEC = 0x69;
 };

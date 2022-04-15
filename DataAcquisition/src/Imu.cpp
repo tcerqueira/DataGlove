@@ -1,6 +1,8 @@
 #include "Imu.h"
+#include <algorithm>
 
 static double mean(float array[], uint32_t len);
+static float median(float array[], uint32_t len);
 
 Imu::Imu(SPIClass *spi, const uint8_t cs)
     : imu(spi, cs), protocol(Imu::Protocol::SPI)
@@ -46,6 +48,7 @@ void Imu::calibrate()
         gx[i] = imu.gyro_x_radps();
         gy[i] = imu.gyro_y_radps();
         gz[i] = imu.gyro_z_radps();
+        push_accel_buffer(ay[i], ay[i], az[i]);
         i++;
     }
     gyro_offset[0] = mean(gx, cycles);
@@ -57,15 +60,28 @@ void Imu::read() // https://www.youtube.com/watch?v=CHSYgLfhwUo
 {
     delta_us = timer.stop();
     recv_new = imu.Read();
+    float ax_filt, ay_filt, az_filt;
 
-    accel_mps2[0] = imu.accel_x_mps2() * delta_us / 1000000.0;
-    accel_mps2[1] = imu.accel_y_mps2() * delta_us / 1000000.0;
-    accel_mps2[2] = imu.accel_z_mps2() * delta_us / 1000000.0;
+    push_accel_buffer(imu.accel_x_mps2(), imu.accel_y_mps2(), imu.accel_z_mps2());
+    ax_filt = median(accel_buffer[0], Imu::accel_buffer_len);
+    ay_filt = median(accel_buffer[1], Imu::accel_buffer_len);
+    az_filt = median(accel_buffer[2], Imu::accel_buffer_len);
+    accel_mps2[0] = (ax_filt - accel_offset[0]) * delta_us / 1000000.0;
+    accel_mps2[1] = (ay_filt - accel_offset[1]) * delta_us / 1000000.0;
+    accel_mps2[2] = (az_filt - accel_offset[2]) * delta_us / 1000000.0;
     gyro_drad[0]  = (imu.gyro_x_radps() - gyro_offset[0]) * delta_us / 1000000.0;
     gyro_drad[1]  = (imu.gyro_y_radps() - gyro_offset[1]) * delta_us / 1000000.0;
     gyro_drad[2]  = (imu.gyro_z_radps() - gyro_offset[2]) * delta_us / 1000000.0;
 
     timer.start();
+}
+
+void Imu::push_accel_buffer(float ax, float ay, float az)
+{
+    accel_buffer[0][accel_buffer_index] = ax;
+    accel_buffer[1][accel_buffer_index] = ay;
+    accel_buffer[2][accel_buffer_index] = az;
+    accel_buffer_index = (accel_buffer_index + 1) % Imu::accel_buffer_len;
 }
 
 static double mean(float array[], uint32_t len)
@@ -75,4 +91,12 @@ static double mean(float array[], uint32_t len)
         sum += (double)array[i];
 
     return sum / len;
+}
+
+static float median(float array[], uint32_t len)
+{
+    float arr[len];
+    std::copy(array, array+len, arr);
+    std::sort(arr, arr+len);
+    return arr[len / 2];
 }
