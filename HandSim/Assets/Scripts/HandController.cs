@@ -84,14 +84,19 @@ public class HandController : MonoBehaviour
 
         if(shouldUpdate)
         {
-            HandPose pose = ParseGloveData();
-            wrist.localRotation = (Quaternion)pose.wrist;
-            for (int i=0; i < 5; i++)
+            try
             {
-                for (int j=0; j < 3; j++)
-                {
-                    fingers[i].joints[j].localRotation = (Quaternion)pose.fingers[i].joints[j];
-                } 
+                HandPose pose = ParseGloveData();
+
+                wrist.localRotation = (Quaternion)pose.wrist;
+                for (int i=0; i < 5; i++)
+                    for (int j=0; j < 3; j++)
+                        fingers[i].joints[j].localRotation = (Quaternion)pose.fingers[i].joints[j];
+            }
+            catch (System.Exception)
+            {
+                Debug.Log($"Last data: {Encoding.ASCII.GetString(gloveData)}");
+                throw;
             }
         }
     }
@@ -102,12 +107,13 @@ public class HandController : MonoBehaviour
         UdpClient client = state.u;
         IPEndPoint endpoint = state.e;
 
+        byte[] receiveBytes;
         lock (gloveDataLock)
         {
             gloveData = client.EndReceive(ar, ref endpoint);
             received = true;
+            receiveBytes = (byte[])gloveData.Clone();
         }
-        byte[] receiveBytes = (byte[])gloveData.Clone();
         string receiveString = Encoding.ASCII.GetString(receiveBytes);
 
         client.BeginReceive(new AsyncCallback(OnReceive), state);
