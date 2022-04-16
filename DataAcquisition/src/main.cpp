@@ -5,12 +5,18 @@
 #include "Imu.h"
 
 #define NUMIMUS 2
+#define FRAMETIME_60FPS 16666
+#define FRAMETIME_30FPS 33333
+
+static const constexpr uint32_t FRAMETIME = FRAMETIME_60FPS;
 
 // extern "C" uint32_t set_arm_clock(uint32_t frequency);
 
 // /* Mpu9250 object, SPI bus, CS on pin 10 */
-// bfs::Mpu9250 imu(&SPI, 10);
-// bfs::Mpu9250 imu2(&SPI, 9);
+// Imu imus[NUMIMUS] = {
+//     Imu(&SPI, 10),
+//     Imu(&SPI, 9)
+// };
 
 /* Mpu9250 object */
 Imu imus[NUMIMUS] = {
@@ -41,6 +47,7 @@ void setup() {
 }
 
 void loop() {
+    Timer frame;
     for(uint8_t i=0; i < NUMIMUS; i++)
     {
         imus[i].read();
@@ -57,5 +64,9 @@ void loop() {
     String payload;
     hand.serialize(payload);
     Serial.print(payload);
+
+    uint32_t delta = frame.stop();
+    if(delta < FRAMETIME)
+        delayMicroseconds(FRAMETIME - delta);
 }
 
