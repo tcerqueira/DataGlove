@@ -16,9 +16,28 @@ public:
     {
     }
 
+    Quaternion(double x, double y, double z, double w)
+    : Eigen::Quaterniond(w,x,y,z)
+    {
+    }
+
     // This constructor allows you to construct Quaternion from Eigen expressions
     Quaternion(const Eigen::Quaterniond& other)
     : Eigen::Quaterniond(other)
+    {
+    }
+
+    Quaternion(const Eigen::Vector3d &euler)
+    : Eigen::Quaterniond(Eigen::AngleAxisd(euler.x(), Eigen::Vector3d::UnitX())
+                        * Eigen::AngleAxisd(euler.y(), Eigen::Vector3d::UnitY())
+                        * Eigen::AngleAxisd(euler.z(), Eigen::Vector3d::UnitZ()))
+    {
+    }
+
+    Quaternion(double ex, double ey, double ez)
+    : Eigen::Quaterniond(Eigen::AngleAxisd(ex, Eigen::Vector3d::UnitX())
+                        * Eigen::AngleAxisd(ey, Eigen::Vector3d::UnitY())
+                        * Eigen::AngleAxisd(ez, Eigen::Vector3d::UnitZ()))
     {
     }
 
@@ -27,20 +46,6 @@ public:
     {
         this->Eigen::Quaterniond::operator=(other);
         return *this;
-    }
-
-    inline static Quaternion fromEuler(const Eigen::Vector3d &euler)
-    {
-        return Eigen::AngleAxisd(euler.x(), Eigen::Vector3d::UnitX())
-               * Eigen::AngleAxisd(euler.y(), Eigen::Vector3d::UnitY())
-               * Eigen::AngleAxisd(euler.z(), Eigen::Vector3d::UnitZ());
-    }
-
-    inline static Quaternion fromEuler(double x, double y, double z)
-    {
-        return Eigen::AngleAxisd(x, Eigen::Vector3d::UnitX())
-               * Eigen::AngleAxisd(y, Eigen::Vector3d::UnitY())
-               * Eigen::AngleAxisd(z, Eigen::Vector3d::UnitZ());
     }
 
     JsonObject serialize(JsonObject obj)
