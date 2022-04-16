@@ -1,6 +1,8 @@
 #include "Imu.h"
 #include <algorithm>
 
+#define GRAVITY 9.807
+
 static double mean(float array[], uint32_t len);
 static float median(float array[], uint32_t len);
 
@@ -51,6 +53,16 @@ void Imu::calibrate()
         push_accel_buffer(ay[i], ay[i], az[i]);
         i++;
     }
+
+    Eigen::Vector3d accel_mean(
+        mean(ax, cycles),
+        mean(ay, cycles),
+        mean(az, cycles)
+    );
+    const double accel_ratio = accel_mean.norm() / GRAVITY;
+    accel_offset[0] = (accel_mean.x() * accel_ratio) - accel_mean.x();
+    accel_offset[1] = (accel_mean.y() * accel_ratio) - accel_mean.y();
+    accel_offset[2] = (accel_mean.z() * accel_ratio) - accel_mean.z();
     gyro_offset[0] = mean(gx, cycles);
     gyro_offset[1] = mean(gy, cycles);
     gyro_offset[2] = mean(gz, cycles);
