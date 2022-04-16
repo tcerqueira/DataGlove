@@ -51,7 +51,7 @@ void loop() {
         double dx = imus[0].gyro_x();
         double dy = imus[0].gyro_y();
         double dz = imus[0].gyro_z();
-        hand.updateWrist(Eigen::Vector3d(dy, dz, dx));
+        hand.updateWrist(Eigen::Vector3d(dy, dz, dx), Eigen::Vector3d(dy, dz, dx));
     }
 
     String payload;

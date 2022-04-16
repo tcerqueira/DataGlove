@@ -6,7 +6,7 @@ Hand::Hand()
 {
     // Wrist JSON
     JsonObject wristObj = encoded.createNestedObject("wrist");
-    Quaternion::fromEuler(wrist).serialize(wristObj);
+    Quaternion(wrist).serialize(wristObj);
     // Fingers JSON
     JsonArray fingersArr = encoded.createNestedArray("fingers");
     for(uint8_t i=0; i < 5; i++)
@@ -15,7 +15,7 @@ Hand::Hand()
         JsonArray jointsArr = fingerObj.createNestedArray("joints");
         for(uint8_t j=0; j < 3; j++)
         {
-            Quaternion::fromEuler(fingers[i].joints[j]).serialize(jointsArr);
+            Quaternion(fingers[i].joints[j]).serialize(jointsArr);
         }
     }
 }
@@ -32,7 +32,8 @@ Eigen::Vector3d& Hand::getWrist()
 
 void Hand::serialize(String &outStr)
 {
-    Quaternion wrist_q = Quaternion::fromEuler(wrist);
+    // Quaternion wrist_q = Quaternion::fromEuler(wrist);
+    Quaternion &wrist_q = wrist_qt;
     encoded["wrist"]["x"] = wrist_q.x();
     encoded["wrist"]["y"] = wrist_q.y();
     encoded["wrist"]["z"] = wrist_q.z();
@@ -44,7 +45,7 @@ void Hand::serialize(String &outStr)
         JsonArray jointsArr = fingersArr[i]["joints"];
         for(uint8_t j=0; j < 3; j++)
         {
-            Quaternion joint_q = Quaternion::fromEuler(fingers[i].joints[j]);
+            Quaternion joint_q = Quaternion(fingers[i].joints[j]);
             jointsArr[j]["x"] = joint_q.x();
             jointsArr[j]["y"] = joint_q.y();
             jointsArr[j]["z"] = joint_q.z();
@@ -55,7 +56,7 @@ void Hand::serialize(String &outStr)
     outStr += '\n';
 }
 
-void Hand::updateFinger(FingerId id, const Eigen::Vector3d dRotations[])
+void Hand::updateFinger(FingerId id, const Eigen::Vector3d dEulers[], const Eigen::Vector3d accel[])
 {
     // Quaternion q = Eigen::AngleAxisd(dRotations[0].x(), Eigen::Vector3d::UnitX())
     //                * Eigen::AngleAxisd(dRotations[0].y(), Eigen::Vector3d::UnitY())
@@ -64,7 +65,8 @@ void Hand::updateFinger(FingerId id, const Eigen::Vector3d dRotations[])
     // fingers[id].joints[0] *= q;
 }
 
-void Hand::updateWrist(const Eigen::Vector3d &dRotation)
+void Hand::updateWrist(const Eigen::Vector3d &dEuler, const Eigen::Vector3d &accel)
 {
-    wrist += dRotation;
+    wrist_qt *= Quaternion(dEuler);
+    wrist += dEuler;
 }
