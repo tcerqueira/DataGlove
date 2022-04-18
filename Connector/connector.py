@@ -13,6 +13,7 @@ with socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM) as UDPClientSo
     # Serial connection
     serialConn = serial.Serial(port, 115200)
     count = 0;
+    print("Running...");
 
     while True:
         data = serialConn.readline()
