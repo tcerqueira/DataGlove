@@ -8,7 +8,7 @@
 #define FRAMETIME_60FPS 16666
 #define FRAMETIME_30FPS 33333
 
-static const constexpr uint32_t FRAMETIME = FRAMETIME_60FPS;
+static constexpr uint32_t FRAMETIME = FRAMETIME_60FPS;
 
 // extern "C" uint32_t set_arm_clock(uint32_t frequency);
 
@@ -25,7 +25,8 @@ Imu imus[NUMIMUS] = {
 };
 Hand hand;
 
-void setup() {
+void setup()
+{
     /* Serial to display data */
     Serial.begin(115200);
     while(!Serial) {}
@@ -46,8 +47,11 @@ void setup() {
     }
 }
 
-void loop() {
+void loop()
+{
+    // Start timing this frame
     Timer frame;
+    // Read, filter and process Imu readings
     for(uint8_t i=0; i < NUMIMUS; i++)
     {
         imus[i].read();
@@ -61,10 +65,12 @@ void loop() {
         hand.updateWrist(Eigen::Vector3d(dy, dz, dx), Eigen::Vector3d(dy, dz, dx));
     }
 
+    // Serialize and send data
     String payload;
     hand.serialize(payload);
     Serial.print(payload);
 
+    // Max frame rate
     uint32_t delta = frame.stop();
     if(delta < FRAMETIME)
         delayMicroseconds(FRAMETIME - delta);
