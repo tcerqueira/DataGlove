@@ -68,7 +68,7 @@ void Imu::calibrate()
     gyro_offset[2] = mean(gz, cycles);
 }
 
-void Imu::read() // https://www.youtube.com/watch?v=CHSYgLfhwUo
+bool Imu::read() // https://www.youtube.com/watch?v=CHSYgLfhwUo
 {
     delta_us = timer.stop();
     recv_new = imu.Read();
@@ -86,6 +86,7 @@ void Imu::read() // https://www.youtube.com/watch?v=CHSYgLfhwUo
     gyro_drad[2]  = (imu.gyro_z_radps() - gyro_offset[2]) * delta_us / 1000000.0;
 
     timer.start();
+    return recv_new;
 }
 
 void Imu::push_accel_buffer(float ax, float ay, float az)

@@ -18,7 +18,7 @@ public:
 
     bool init();
     void calibrate();
-    void read();
+    bool read();
     double accel_x() { return accel_mps2[0]; }
     double accel_y() { return accel_mps2[1]; }
     double accel_z() { return accel_mps2[2]; }
