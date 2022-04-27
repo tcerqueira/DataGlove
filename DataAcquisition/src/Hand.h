@@ -4,36 +4,29 @@
 #include <stdint.h>
 
 struct Finger {
-    Eigen::Vector3d joints[3];
-};
-
-struct Finger_qt {
     Quaternion joints[3];
 };
+
 
 class Hand
 {
 public:
     enum FingerId {
-        THUMB = 0,
-        INDEX,
-        MIDDLE,
-        RING,
-        PINKY
+        THUMB = 0, INDEX, MIDDLE, RING, PINKY
     };
 
 public:
     Hand();
     Finger& getFinger(uint8_t index);
-    Eigen::Vector3d& getWrist();
+    Quaternion& getWrist();
     void serialize(String &outStr);
+    void updateJoint(uint8_t index, const Eigen::Vector3d &dEuler, const Eigen::Vector3d &accel);
+    void updateJoint(Quaternion &joint, const Eigen::Vector3d &dEuler, const Eigen::Vector3d &accel);
     void updateFinger(FingerId id, const Eigen::Vector3d dEulers[], const Eigen::Vector3d accel[]);
     void updateWrist(const Eigen::Vector3d &dEuler, const Eigen::Vector3d &accel);
 
 private:
-    Eigen::Vector3d wrist;
-    Quaternion wrist_qt;
+    Quaternion wrist;
     Finger fingers[5];
-    Finger_qt fingers_qt[5];
     StaticJsonDocument<4096> encoded;
 };
