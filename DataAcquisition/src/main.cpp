@@ -64,6 +64,21 @@ void loop()
         tca9548a.setChannel(mux_channels[i]);
         imus[i].read();
     }
+
+    // Update hand model
+    // for(uint8_t i=0; i < NUMIMUS; i++)
+    // {
+    //     if(!imus[0].new_data())
+    //         continue;
+
+    //     double ex = imus[i].gyro_x();
+    //     double ey = imus[i].gyro_y();
+    //     double ez = imus[i].gyro_z();
+    //     double ax = imus[i].accel_x();
+    //     double ay = imus[i].accel_y();
+    //     double az = imus[i].accel_z();
+    //     hand.updateJoint(i, Eigen::Vector3d(ey, ez, ex), Eigen::Vector3d(ay, az, ax));
+    // }
     
     if(imus[0].new_data())
     {
@@ -71,6 +86,14 @@ void loop()
         double dy = imus[0].gyro_y();
         double dz = imus[0].gyro_z();
         hand.updateWrist(Eigen::Vector3d(dy, dz, dx), Eigen::Vector3d(dy, dz, dx));
+    }
+
+    if(imus[1].new_data())
+    {
+        double dx = imus[1].gyro_x();
+        double dy = imus[1].gyro_y();
+        double dz = imus[1].gyro_z();
+        hand.updateJoint(4, Eigen::Vector3d(dy, dz, dx), Eigen::Vector3d(dy, dz, dx));
     }
 
     // Serialize and send data
