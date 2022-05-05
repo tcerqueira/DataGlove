@@ -47,7 +47,7 @@ void Hand::serialize(String &outStr)
         jointsArr[0]["z"] = wrist_diff.z();
         jointsArr[0]["w"] = wrist_diff.w();
 
-        for(uint8_t j=1; j < 2; j++)
+        for(uint8_t j=1; j < 3; j++)
         {
             // Relative rotation between finger joints
             Quaternion diff = fingers[i].joints[j-1].inverse() * fingers[i].joints[j];
