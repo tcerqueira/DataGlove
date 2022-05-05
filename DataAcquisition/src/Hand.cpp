@@ -40,13 +40,21 @@ void Hand::serialize(String &outStr)
     for(uint8_t i=0; i < 5; i++)
     {
         JsonArray jointsArr = fingersArr[i]["joints"];
-        for(uint8_t j=0; j < 3; j++)
+        // Relative rotation between finger and wrist
+        Quaternion wrist_diff = wrist.inverse() * fingers[i].joints[0];
+        jointsArr[0]["x"] = wrist_diff.x();
+        jointsArr[0]["y"] = wrist_diff.y();
+        jointsArr[0]["z"] = wrist_diff.z();
+        jointsArr[0]["w"] = wrist_diff.w();
+
+        for(uint8_t j=1; j < 2; j++)
         {
-            const Quaternion &joint = fingers[i].joints[j];
-            jointsArr[j]["x"] = joint.x();
-            jointsArr[j]["y"] = joint.y();
-            jointsArr[j]["z"] = joint.z();
-            jointsArr[j]["w"] = joint.w();
+            // Relative rotation between finger joints
+            Quaternion diff = fingers[i].joints[j-1].inverse() * fingers[i].joints[j];
+            jointsArr[j]["x"] = diff.x();
+            jointsArr[j]["y"] = diff.y();
+            jointsArr[j]["z"] = diff.z();
+            jointsArr[j]["w"] = diff.w();
         }
     }
     serializeJson(encoded, outStr);
