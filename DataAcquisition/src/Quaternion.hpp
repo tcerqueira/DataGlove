@@ -48,6 +48,11 @@ public:
         return *this;
     }
 
+    Eigen::Vector3d eulerAngles()
+    {
+        return this->toRotationMatrix().eulerAngles(0, 1, 2);
+    }
+
     JsonObject serialize(JsonObject obj)
     {
         obj["x"] = x();
