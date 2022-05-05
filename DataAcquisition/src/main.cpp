@@ -25,15 +25,14 @@ Imu imus[NUMIMUS] = {
     Imu(&Wire, Imu::I2C_ADDR_PRIM),
     Imu(&Wire, Imu::I2C_ADDR_SEC)
 };
-uint8_t mux_channels[NUMIMUS] = { 0,0 };
 I2CMux tca9548a(0x70);
 Hand hand;
 
+uint8_t mux_map[NUMIMUS] = { 0,0 };
+uint8_t joint_map[NUMIMUS] = { 4,5 };
+
 void setup()
 {
-    /* Serial to display data */
-    Serial.begin(115200);
-    while(!Serial) {}
     // ############# SPI #############
     // Set clock speed (https://forum.pjrc.com/threads/58688-Teensy-4-0-Clock-speed-influences-delay-and-SPI)
     // set_arm_clock(396000000);
@@ -43,6 +42,9 @@ void setup()
     /* Start the I2C bus */
     Wire.begin();
     Wire.setClock(400000);
+    /* Serial to display data */
+    Serial.begin(115200);
+    while(!Serial) {}
     /* Initialize and configure IMU */
     for(uint8_t i=0; i < NUMIMUS; i++)
     {
@@ -61,41 +63,48 @@ void loop()
     // Read, filter and process Imu readings
     for(uint8_t i=0; i < NUMIMUS; i++)
     {
-        tca9548a.setChannel(mux_channels[i]);
+        tca9548a.setChannel(mux_map[i]);
         imus[i].read();
     }
 
     // Update hand model
-    // for(uint8_t i=0; i < NUMIMUS; i++)
+    for(uint8_t i=0; i < NUMIMUS; i++)
+    {
+        if(!imus[0].new_data())
+            continue;
+
+        double ex = imus[i].gyro_x();
+        double ey = imus[i].gyro_y();
+        double ez = imus[i].gyro_z();
+        double ax = imus[i].accel_x();
+        double ay = imus[i].accel_y();
+        double az = imus[i].accel_z();
+        hand.updateJoint(joint_map[i], Eigen::Vector3d(ey, ez, ex), Eigen::Vector3d(ay, az, ax));
+    }
+
+    // Interpolate each last finger phalange
+    // const uint8_t tip_joints[] = { 6 };
+    // const uint8_t interpolation_imus[] = { 1 };
+    // for(uint8_t i=0; i < 1; i++)
     // {
-    //     if(!imus[0].new_data())
-    //         continue;
-
-    //     double ex = imus[i].gyro_x();
-    //     double ey = imus[i].gyro_y();
-    //     double ez = imus[i].gyro_z();
-    //     double ax = imus[i].accel_x();
-    //     double ay = imus[i].accel_y();
-    //     double az = imus[i].accel_z();
-    //     hand.updateJoint(i, Eigen::Vector3d(ey, ez, ex), Eigen::Vector3d(ay, az, ax));
+    //     // FIX ME !!
+    //     Imu &imu = imus[interpolation_imus[i]];
+    //     Imu &imu_prev = imus[interpolation_imus[i] - 1];
+    //     const double angle = 115.0/65 * (imu.gyro_y() - imu_prev.gyro_y());
+    //     hand.updateJoint(tip_joints[i], Eigen::Vector3d(angle, 0, 0), Eigen::Vector3d(angle, 0, 0));
     // }
+
+    // Interpolate each last finger phalange
+    for(uint8_t i=1; i < 5; i++)
+    {
+        // Find the angle between phalange 0 and 1 rotate last phalange by a ratio of that amount
+        Finger& finger = hand.getFinger(i);
+        Quaternion diff = finger.joints[0].inverse() * finger.joints[1];
+        const double angle = 65/115.0 * diff.eulerAngles().x();
+        Quaternion rotation = finger.joints[1] * Eigen::AngleAxisd(angle < 0 ? 0 : angle, Eigen::Vector3d::UnitX());
+        finger.joints[2] = rotation;
+    }
     
-    if(imus[0].new_data())
-    {
-        double dx = imus[0].gyro_x();
-        double dy = imus[0].gyro_y();
-        double dz = imus[0].gyro_z();
-        hand.updateWrist(Eigen::Vector3d(dy, dz, dx), Eigen::Vector3d(dy, dz, dx));
-    }
-
-    if(imus[1].new_data())
-    {
-        double dx = imus[1].gyro_x();
-        double dy = imus[1].gyro_y();
-        double dz = imus[1].gyro_z();
-        hand.updateJoint(4, Eigen::Vector3d(dy, dz, dx), Eigen::Vector3d(dy, dz, dx));
-    }
-
     // Serialize and send data
     output_data();
 
