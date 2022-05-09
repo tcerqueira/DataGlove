@@ -2,6 +2,7 @@
 #include "Hand.h"
 #include "Drivers/Imu.h"
 #include "Drivers/I2CMux.hpp"
+#include "Drivers/AnalogSensor.hpp"
 
 #define NUMIMUS 2
 #define FRAMETIME_60FPS 16666
@@ -27,6 +28,8 @@ Imu imus[NUMIMUS] = {
 };
 I2CMux tca9548a(0x70);
 Hand hand;
+
+AnalogSensor<double> flex(14, 0, 1024, 0.0, 1.0);
 
 uint8_t mux_map[NUMIMUS] = { 0,0 };
 uint8_t joint_map[NUMIMUS] = { 4,5 };
@@ -54,6 +57,7 @@ void setup()
 
     // Initialize pose
     // init_hand();
+    // double in = flex.read();
 }
 
 void loop()
