@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "Hand.h"
-#include "Imu.h"
-#include "I2CMux.hpp"
+#include "Drivers/Imu.h"
+#include "Drivers/I2CMux.hpp"
 
 #define NUMIMUS 2
 #define FRAMETIME_60FPS 16666
