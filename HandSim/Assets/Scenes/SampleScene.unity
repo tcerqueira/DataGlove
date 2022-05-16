@@ -5625,7 +5625,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 492e1f7dd8cdc6e488897377ae18cd64, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  wrist: {fileID: 892684605}
+  wrist: {fileID: 462214943}
   fingerRoots:
   - {fileID: 5978104923062256643}
   - {fileID: 99940861728476227}
