@@ -122,15 +122,20 @@ void loop()
 
 void init_hand()
 {
-    // NEEDS FIX !!
-    while(!imus[0].read());
-    double ax = imus[0].accel_x();
-    double ay = imus[0].accel_y();
-    double az = imus[0].accel_z();
-    double ex = atan2(az, ay);
-    double ey = atan2(-1 * ax, sqrt(ay*ay + az*az));
-    double ez = 0;
-    hand.updateWrist(Eigen::Vector3d(ey, ez, ex), Eigen::Vector3d(ey, ez, ex));
+    // FIX ME!!    
+    for(uint8_t i=0; i < NUMIMUS; i++)
+    {
+        tca9548a.setChannel(mux_map[i]);
+        while(!imus[i].read());
+
+        double ax = imus[i].accel_x();
+        double ay = imus[i].accel_y();
+        double az = imus[i].accel_z();
+        double ex = atan2(-1 * ax, sqrt(ay*ay + az*az));
+        double ey = atan2(az, ay);
+        double ez = 0;
+        hand.updateJoint(joint_map[i], Eigen::Vector3d(ex, ey, ez), Eigen::Vector3d(ey, ez, ex));
+    }
 
     output_data();
 }
