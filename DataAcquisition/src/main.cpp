@@ -76,7 +76,7 @@ void loop()
     // Update hand model
     for(uint8_t i=0; i < NUMIMUS; i++)
     {
-        if(!imus[0].new_data())
+        if(!imus[i].new_data())
             continue;
 
         double ex = imus[i].gyro_x();
