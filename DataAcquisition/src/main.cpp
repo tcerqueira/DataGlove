@@ -4,7 +4,7 @@
 #include "Drivers/I2CMux.hpp"
 #include "Drivers/AnalogSensor.hpp"
 
-#define NUMIMUS 3
+#define NUMIMUS 8
 #define FRAMETIME_60FPS 16666
 #define FRAMETIME_30FPS 33333
 
@@ -25,10 +25,15 @@ void output_data();
 Imu imus[NUMIMUS] = {
     Imu(&Wire, Imu::I2C_ADDR_PRIM),
     Imu(&Wire, Imu::I2C_ADDR_SEC),
-    Imu(&Wire, Imu::I2C_ADDR_PRIM)
+    Imu(&Wire, Imu::I2C_ADDR_PRIM),
+    Imu(&Wire, Imu::I2C_ADDR_SEC),
+    Imu(&Wire, Imu::I2C_ADDR_PRIM),
+    Imu(&Wire, Imu::I2C_ADDR_SEC),
+    Imu(&Wire, Imu::I2C_ADDR_PRIM),
+    Imu(&Wire, Imu::I2C_ADDR_SEC)
 };
-uint8_t mux_map[NUMIMUS] = { 1,1,2 };
-uint8_t joint_map[NUMIMUS] = { 4,0,5 };
+uint8_t mux_map[NUMIMUS] = { 1,1,2,2,3,3,4,4 };
+uint8_t joint_map[NUMIMUS] = { 0,1,2,3,4,5,7,8 };
 
 I2CMux tca9548a(0x70);
 AnalogSensor<double> flex(14, 0, 1024, 0.0, 1.0);
@@ -45,7 +50,7 @@ void setup()
     // ############# I2C #############
     /* Start the I2C bus */
     Wire.begin();
-    Wire.setClock(400000);
+    Wire.setClock(1500000);
     /* Serial to display data */
     Serial.begin(115200);
     while(!Serial) {}
