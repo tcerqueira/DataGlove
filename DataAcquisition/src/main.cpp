@@ -50,7 +50,7 @@ void setup()
     // ############# I2C #############
     /* Start the I2C bus */
     Wire.begin();
-    Wire.setClock(1500000);
+    Wire.setClock(400000);
     /* Serial to display data */
     Serial.begin(115200);
     while(!Serial) {}
@@ -64,6 +64,7 @@ void setup()
 
     // Initialize pose
     // init_hand();
+    // output_data();
     // double in = flex.read();
 }
 
@@ -111,8 +112,10 @@ void loop()
         // Find the angle between phalange 0 and 1 rotate last phalange by a ratio of that amount
         Finger& finger = hand.getFinger(i);
         Quaternion diff = finger.joints[0].inverse() * finger.joints[1];
+
         const double angle = 65/115.0 * diff.eulerAngles().x();
         Quaternion rotation = finger.joints[1] * Eigen::AngleAxisd(angle < 0 ? 0 : angle, Eigen::Vector3d::UnitX());
+
         finger.joints[2] = rotation;
     }
     
@@ -141,8 +144,6 @@ void init_hand()
         double ez = 0;
         hand.updateJoint(joint_map[i], Eigen::Vector3d(ex, ey, ez), Eigen::Vector3d(ey, ez, ex));
     }
-
-    output_data();
 }
 
 void output_data()

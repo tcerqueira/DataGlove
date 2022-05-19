@@ -72,6 +72,12 @@ bool Imu::read() // https://www.youtube.com/watch?v=CHSYgLfhwUo
 {
     delta_us = timer.stop();
     recv_new = imu.Read();
+    if(!recv_new)
+    {
+        timer.start();
+        return recv_new;
+    }
+
     float ax_filt, ay_filt, az_filt;
 
     push_accel_buffer(imu.accel_x_mps2(), imu.accel_y_mps2(), imu.accel_z_mps2());
