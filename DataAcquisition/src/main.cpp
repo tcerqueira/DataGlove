@@ -1,25 +1,26 @@
 #include <Arduino.h>
+#include "Utils.h"
 #include "Hand.h"
 #include "Drivers/Imu.h"
 #include "Drivers/I2CMux.hpp"
 #include "Drivers/AnalogSensor.hpp"
 
-#define NUMIMUS 8
-#define FRAMETIME_60FPS 16666
-#define FRAMETIME_30FPS 33333
+#define NUMIMUS 10
+#define FRAMETIME_UNLOCK    0
+#define FRAMETIME_120FPS    8333
+#define FRAMETIME_90FPS     11111
+#define FRAMETIME_60FPS     16666
+#define FRAMETIME_30FPS     33333
+#define FRAMETIME_15FPS     66666
 
-static constexpr uint32_t FRAMETIME = FRAMETIME_60FPS;
+static constexpr uint32_t FRAMETIME         = FRAMETIME_UNLOCK;
+static constexpr uint32_t SERIAL_FRAMETIME  = FRAMETIME_30FPS;
+static uint32_t delta_serialization;
 
 void init_hand();
 void output_data();
 
-// extern "C" uint32_t set_arm_clock(uint32_t frequency);
-
-// /* Mpu9250 object, SPI bus, CS on pin 10 */
-// Imu imus[NUMIMUS] = {
-//     Imu(&SPI, 10),
-//     Imu(&SPI, 9)
-// };
+extern "C" uint32_t set_arm_clock(uint32_t frequency);
 
 // Mpu9250 object
 Imu imus[NUMIMUS] = {
@@ -30,10 +31,12 @@ Imu imus[NUMIMUS] = {
     Imu(&Wire, Imu::I2C_ADDR_PRIM),
     Imu(&Wire, Imu::I2C_ADDR_SEC),
     Imu(&Wire, Imu::I2C_ADDR_PRIM),
+    Imu(&Wire, Imu::I2C_ADDR_SEC),
+    Imu(&Wire, Imu::I2C_ADDR_PRIM),
     Imu(&Wire, Imu::I2C_ADDR_SEC)
 };
-uint8_t mux_map[NUMIMUS] = { 1,1,2,2,3,3,4,4 };
-uint8_t joint_map[NUMIMUS] = { 0,1,2,3,4,5,7,8 };
+uint8_t mux_map[NUMIMUS] = { 1,1,2,2,3,3,4,4,5,5 };
+uint8_t joint_map[NUMIMUS] = { 0,1,2,3,4,5,7,8,10,11 };
 
 I2CMux tca9548a(0x70);
 AnalogSensor<double> flex(14, 0, 1024, 0.0, 1.0);
@@ -42,11 +45,8 @@ Hand hand;
 
 void setup()
 {
-    // ############# SPI #############
     // Set clock speed (https://forum.pjrc.com/threads/58688-Teensy-4-0-Clock-speed-influences-delay-and-SPI)
-    // set_arm_clock(396000000);
-    /* Start the SPI bus */
-    // SPI.begin();
+    set_arm_clock(600000000);
     // ############# I2C #############
     /* Start the I2C bus */
     Wire.begin();
@@ -65,7 +65,6 @@ void setup()
     // Initialize pose
     // init_hand();
     // output_data();
-    // double in = flex.read();
 }
 
 void loop()
@@ -95,18 +94,6 @@ void loop()
     }
 
     // Interpolate each last finger phalange
-    // const uint8_t tip_joints[] = { 6 };
-    // const uint8_t interpolation_imus[] = { 1 };
-    // for(uint8_t i=0; i < 1; i++)
-    // {
-    //     // FIX ME !!
-    //     Imu &imu = imus[interpolation_imus[i]];
-    //     Imu &imu_prev = imus[interpolation_imus[i] - 1];
-    //     const double angle = 115.0/65 * (imu.gyro_y() - imu_prev.gyro_y());
-    //     hand.updateJoint(tip_joints[i], Eigen::Vector3d(angle, 0, 0), Eigen::Vector3d(angle, 0, 0));
-    // }
-
-    // Interpolate each last finger phalange
     for(uint8_t i=1; i < 5; i++)
     {
         // Find the angle between phalange 0 and 1 rotate last phalange by a ratio of that amount
@@ -114,15 +101,24 @@ void loop()
         Quaternion diff = finger.joints[0].inverse() * finger.joints[1];
 
         const double angle = 65/115.0 * diff.eulerAngles().x();
-        Quaternion rotation = finger.joints[1] * Eigen::AngleAxisd(angle < 0 ? 0 : angle, Eigen::Vector3d::UnitX());
+        // const double angle = diff.eulerAngles().x();
+        // finger.joints[2] = Quaternion(angle, angle, angle, angle);
+        Quaternion rotation = finger.joints[1] * Eigen::AngleAxisd(mod(angle, EIGEN_PI/2) - (EIGEN_PI/2), Eigen::Vector3d::UnitX());
 
         finger.joints[2] = rotation;
     }
-    
-    // Serialize and send data
-    output_data();
 
-    // Max frame rate
+    // Max serialization frame rate
+    uint32_t delta_intermidiate = frame.elapsed_now();
+    delta_serialization += delta_intermidiate;
+    if(delta_serialization > SERIAL_FRAMETIME)
+    {
+        // Serialize and send data
+        output_data();
+        delta_serialization = 0;
+    }
+
+    // Max processing frame rate
     uint32_t delta = frame.stop();
     if(delta < FRAMETIME)
         delayMicroseconds(FRAMETIME - delta);
@@ -139,8 +135,8 @@ void init_hand()
         double ax = imus[i].accel_x();
         double ay = imus[i].accel_y();
         double az = imus[i].accel_z();
-        double ex = atan2(-1 * ax, sqrt(ay*ay + az*az));
-        double ey = atan2(az, ay);
+        double ex = atan2(az, ay);
+        double ey = atan2(-1 * ax, sqrt(ay*ay + az*az));
         double ez = 0;
         hand.updateJoint(joint_map[i], Eigen::Vector3d(ex, ey, ez), Eigen::Vector3d(ey, ez, ex));
     }
@@ -152,4 +148,3 @@ void output_data()
     hand.serialize(payload);
     Serial.print(payload);
 }
-
