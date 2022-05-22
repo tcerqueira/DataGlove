@@ -18,7 +18,8 @@ def main():
 
         while True:
             data = serialConn.readline()
-            # print(f'{count}:\t{data.decode("UTF-8")}')
+            # data_dec = data.decode("UTF-8")
+            # print(f'{len(data_dec)}:\t{data_dec}')
             UDPClientSocket.sendto(data, serverAddressPort)
             count = count + 1
 
