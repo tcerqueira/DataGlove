@@ -4,7 +4,7 @@ import sys
 
 def main():
     if len(sys.argv) != 2:
-        exit(f"Usage: python serial_connector.py <PORT>\nExample: python3 serial_connector.py COM3")
+        exit(f"Usage: python serial_bridge.py <PORT>\nExample: python3 serial_bridge.py COM3")
 
     port = sys.argv[1];
 
