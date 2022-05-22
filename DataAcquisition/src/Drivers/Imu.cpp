@@ -1,10 +1,8 @@
 #include "Imu.h"
 #include <algorithm>
+#include "Utils.h"
 
 #define GRAVITY 9.807
-
-static double mean(float array[], uint32_t len);
-static float median(float array[], uint32_t len);
 
 Imu::Imu(SPIClass *spi, const uint8_t cs)
     : imu(spi, cs), protocol(Imu::Protocol::SPI)
@@ -36,7 +34,7 @@ bool Imu::init()
 
 void Imu::calibrate()
 {
-    constexpr const uint16_t cycles = 50;
+    constexpr const uint16_t cycles = calib_cycles;
     float gx[cycles], gy[cycles], gz[cycles];
     float ax[cycles], ay[cycles], az[cycles];
 
@@ -50,19 +48,22 @@ void Imu::calibrate()
         gx[i] = imu.gyro_x_radps();
         gy[i] = imu.gyro_y_radps();
         gz[i] = imu.gyro_z_radps();
-        push_accel_buffer(ay[i], ay[i], az[i]);
+        push_accel_buffer(ax[i], ay[i], az[i]);
         i++;
     }
 
-    Eigen::Vector3d accel_mean(
-        mean(ax, cycles),
-        mean(ay, cycles),
-        mean(az, cycles)
-    );
-    const double accel_ratio = accel_mean.norm() / GRAVITY;
-    accel_offset[0] = (accel_mean.x() * accel_ratio) - accel_mean.x();
-    accel_offset[1] = (accel_mean.y() * accel_ratio) - accel_mean.y();
-    accel_offset[2] = (accel_mean.z() * accel_ratio) - accel_mean.z();
+    // Eigen::Vector3d accel_mean(
+    //     mean(ax, cycles),
+    //     mean(ay, cycles),
+    //     mean(az, cycles)
+    // );
+    // const double accel_ratio = accel_mean.norm() / GRAVITY;
+    // accel_offset[0] = (accel_mean.x() * accel_ratio) - accel_mean.x();
+    // accel_offset[1] = (accel_mean.y() * accel_ratio) - accel_mean.y();
+    // accel_offset[2] = (accel_mean.z() * accel_ratio) - accel_mean.z();
+    accel_offset[0] = 0;
+    accel_offset[1] = 0;
+    accel_offset[2] = 0;
     gyro_offset[0] = mean(gx, cycles);
     gyro_offset[1] = mean(gy, cycles);
     gyro_offset[2] = mean(gz, cycles);
@@ -73,10 +74,7 @@ bool Imu::read() // https://www.youtube.com/watch?v=CHSYgLfhwUo
     delta_us = timer.stop();
     recv_new = imu.Read();
     if(!recv_new)
-    {
-        timer.start();
         return recv_new;
-    }
 
     float ax_filt, ay_filt, az_filt;
 
@@ -101,21 +99,4 @@ void Imu::push_accel_buffer(float ax, float ay, float az)
     accel_buffer[1][accel_buffer_index] = ay;
     accel_buffer[2][accel_buffer_index] = az;
     accel_buffer_index = (accel_buffer_index + 1) % Imu::accel_buffer_len;
-}
-
-static double mean(float array[], uint32_t len)
-{
-    double sum = 0.0;
-    for(uint32_t i=0; i < len; i++)
-        sum += (double)array[i];
-
-    return sum / len;
-}
-
-static float median(float array[], uint32_t len)
-{
-    float arr[len];
-    std::copy(array, array+len, arr);
-    std::sort(arr, arr+len);
-    return arr[len / 2];
 }
