@@ -33,7 +33,7 @@ public:
 
     static inline float seconds(uint32_t micros)
     {
-        return micros / (1000.0f / 1000.0f);
+        return micros / 1000.0f;
     }
     
 private:
