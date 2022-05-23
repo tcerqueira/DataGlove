@@ -92,7 +92,7 @@ void loop()
         double ax = imus[i].accel_x();
         double ay = imus[i].accel_y();
         double az = imus[i].accel_z();
-        hand.updateJoint(joint_map[i], Eigen::Vector3d(ey, ez, ex), Eigen::Vector3d(ay, az, ax));
+        hand.updateJoint(joint_map[i], Eigen::Vector3d(-ey, ez, -ex), Eigen::Vector3d(-ay, az, -ax));
     }
 
     // Interpolate each last finger phalange
@@ -105,7 +105,8 @@ void loop()
         const double angle = 65/115.0 * diff.eulerAngles().x();
         // const double angle = diff.eulerAngles().x();
         // finger.joints[2] = Quaternion(angle, angle, angle, angle);
-        Quaternion rotation = finger.joints[1] * Eigen::AngleAxisd(mod(angle, EIGEN_PI/2) - (EIGEN_PI/2), Eigen::Vector3d::UnitX());
+        // Quaternion rotation = finger.joints[1] * Eigen::AngleAxisd(mod(angle, EIGEN_PI/2) - (EIGEN_PI/2), Eigen::Vector3d::UnitX());
+        Quaternion rotation = finger.joints[1] * Eigen::AngleAxisd(angle, Eigen::Vector3d::UnitX());
 
         finger.joints[2] = rotation;
     }
@@ -128,7 +129,13 @@ void loop()
 
 void init_hand()
 {
-    // FIX ME!!    
+    // FIX ME!!
+    for(uint8_t i=0; i < NUMIMUS; i++)
+    {
+        tca9548a.setChannel(mux_map[i]);
+        while(!imus[i].read());
+    }
+
     for(uint8_t i=0; i < NUMIMUS; i++)
     {
         tca9548a.setChannel(mux_map[i]);
@@ -140,8 +147,14 @@ void init_hand()
         double ex = atan2(az, ay);
         double ey = atan2(-1 * ax, sqrt(ay*ay + az*az));
         double ez = 0;
-        hand.updateJoint(joint_map[i], Eigen::Vector3d(ex, ey, ez), Eigen::Vector3d(ey, ez, ex));
+        hand.updateJoint(joint_map[i], Eigen::Vector3d(-ey, ez, -ex), Eigen::Vector3d(-ey, ez, -ex));
     }
+
+    // for(uint8_t i=0; i < NUMIMUS; i++)
+    // {
+    //     tca9548a.setChannel(mux_map[i]);
+    //     while(!imus[i].read());
+    // }
 }
 
 void output_data()
