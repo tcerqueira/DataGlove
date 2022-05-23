@@ -5,7 +5,7 @@
 #include "Drivers/I2CMux.hpp"
 #include "Drivers/AnalogSensor.hpp"
 
-#define NUMIMUS 10
+#define NUMIMUS 12
 #define FRAMETIME_UNLOCK    0
 #define FRAMETIME_120FPS    8333
 #define FRAMETIME_90FPS     11111
@@ -33,10 +33,12 @@ Imu imus[NUMIMUS] = {
     Imu(&Wire, Imu::I2C_ADDR_PRIM),
     Imu(&Wire, Imu::I2C_ADDR_SEC),
     Imu(&Wire, Imu::I2C_ADDR_PRIM),
+    Imu(&Wire, Imu::I2C_ADDR_SEC),
+    Imu(&Wire, Imu::I2C_ADDR_PRIM),
     Imu(&Wire, Imu::I2C_ADDR_SEC)
 };
-uint8_t mux_map[NUMIMUS] = { 1,1,2,2,3,3,4,4,5,5 };
-uint8_t joint_map[NUMIMUS] = { 0,1,2,3,4,5,7,8,10,11 };
+uint8_t mux_map[NUMIMUS] = { 1,1,2,2,3,3,4,4,5,5,6,6 };
+uint8_t joint_map[NUMIMUS] = { 0,1,2,3,4,5,7,8,10,11,13,14 };
 
 I2CMux tca9548a(0x70);
 AnalogSensor<double> flex(14, 0, 1024, 0.0, 1.0);
