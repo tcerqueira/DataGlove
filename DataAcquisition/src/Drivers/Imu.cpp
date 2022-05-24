@@ -38,6 +38,19 @@ void Imu::calibrate()
     float gx[cycles], gy[cycles], gz[cycles];
     float ax[cycles], ay[cycles], az[cycles];
 
+    // Initialize acceleration buffer
+    while(!imu.Read());
+    float a_x = imu.accel_x_mps2();
+    float a_y = imu.accel_y_mps2();
+    float a_z = imu.accel_z_mps2();
+    for(uint8_t i=0; i < accel_buffer_len; i++)
+    {
+        accel_buffer[0][i] = a_x;
+        accel_buffer[1][i] = a_y;
+        accel_buffer[2][i] = a_z;
+    }
+
+    // Sample readings and find offsets
     for(uint16_t i=0; i < cycles;)
     {
         if(!imu.Read())
@@ -82,9 +95,9 @@ bool Imu::read() // https://www.youtube.com/watch?v=CHSYgLfhwUo
     ax_filt = median(accel_buffer[0], Imu::accel_buffer_len);
     ay_filt = median(accel_buffer[1], Imu::accel_buffer_len);
     az_filt = median(accel_buffer[2], Imu::accel_buffer_len);
-    accel_mps2[0] = (ax_filt - accel_offset[0]) * delta_us / 1000000.0;
-    accel_mps2[1] = (ay_filt - accel_offset[1]) * delta_us / 1000000.0;
-    accel_mps2[2] = (az_filt - accel_offset[2]) * delta_us / 1000000.0;
+    accel_mps2[0] = (ax_filt - accel_offset[0]);
+    accel_mps2[1] = (ay_filt - accel_offset[1]);
+    accel_mps2[2] = (az_filt - accel_offset[2]);
     gyro_drad[0]  = (imu.gyro_x_radps() - gyro_offset[0]) * delta_us / 1000000.0;
     gyro_drad[1]  = (imu.gyro_y_radps() - gyro_offset[1]) * delta_us / 1000000.0;
     gyro_drad[2]  = (imu.gyro_z_radps() - gyro_offset[2]) * delta_us / 1000000.0;
