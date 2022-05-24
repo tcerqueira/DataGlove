@@ -140,14 +140,15 @@ void init_hand()
     {
         tca9548a.setChannel(mux_map[i]);
         while(!imus[i].read());
-
         double ax = imus[i].accel_x();
         double ay = imus[i].accel_y();
         double az = imus[i].accel_z();
-        double ex = atan2(az, ay);
-        double ey = atan2(-1 * ax, sqrt(ay*ay + az*az));
-        double ez = 0;
-        hand.updateJoint(joint_map[i], Eigen::Vector3d(-ey, ez, -ex), Eigen::Vector3d(-ey, ez, -ex));
+
+        Eigen::Vector3d accel(ax, ay, az);
+        Eigen::Vector3d down(0, 0, -1);
+        Quaternion orientation = Quaternion::FromTwoVectors(down, accel);
+        Eigen::Vector3d e = orientation.eulerAngles();
+        hand.updateJoint(joint_map[i], Eigen::Vector3d(-e.y(), e.z(), -e.x()), Eigen::Vector3d(-ay, az, -ax));
     }
 
     // for(uint8_t i=0; i < NUMIMUS; i++)
