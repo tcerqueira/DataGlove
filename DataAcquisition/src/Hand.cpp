@@ -28,6 +28,16 @@ Quaternion& Hand::getWrist()
     return wrist;
 }
 
+Quaternion& Hand::getJoint(uint8_t index)
+{
+    if(index == 0)
+        return wrist;
+
+    uint8_t finger = (index - 1) / 3;
+    uint8_t joint = (index - 1) % 3;
+    return fingers[finger].joints[joint];
+}
+
 void Hand::serialize(String &outStr)
 {
     // Quaternion wrist_q = Quaternion::fromEuler(wrist);
@@ -63,20 +73,23 @@ void Hand::serialize(String &outStr)
 
 void Hand::updateJoint(uint8_t index, const Eigen::Vector3d &dEuler, const Eigen::Vector3d &accel)
 {
-    if(index == 0)
-    {
-        updateWrist(dEuler, accel);
-        return;
-    }
-
-    uint8_t finger = (index - 1) / 3;
-    uint8_t joint = (index - 1) % 3;
-    updateJoint(fingers[finger].joints[joint], dEuler, accel);
+    updateJoint(getJoint(index), Quaternion(dEuler), accel);
 }
 
 void Hand::updateJoint(Quaternion &joint, const Eigen::Vector3d &dEuler, const Eigen::Vector3d &accel)
 {
-    joint *= Quaternion(dEuler);
+    updateJoint(joint, Quaternion(dEuler), accel);
+}
+
+void Hand::updateJoint(uint8_t index, const Quaternion &rot, const Eigen::Vector3d &accel)
+{
+    updateJoint(getJoint(index), rot, accel);
+}
+
+void Hand::updateJoint(Quaternion &joint, const Quaternion &rot, const Eigen::Vector3d &accel)
+{
+    // https://ahrs.readthedocs.io/en/latest/filters/angular.html
+    joint *= rot;
 }
 
 void Hand::updateFinger(FingerId id, const Eigen::Vector3d dEulers[], const Eigen::Vector3d accel[])
