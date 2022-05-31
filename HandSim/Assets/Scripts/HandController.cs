@@ -72,10 +72,14 @@ public class HandController : MonoBehaviour
             {
                 HandPose pose = ParseGloveData();
 
-                wrist.localRotation = (Quaternion)pose.wrist;
+                Quaternion q = (Quaternion)pose.wrist;
+                wrist.localRotation = new Quaternion(-q.y, q.z, -q.x, q.w);
                 for (int i=0; i < 5; i++)
                     for (int j=0; j < 3; j++)
-                        fingers[i].joints[j].localRotation = (Quaternion)pose.fingers[i].joints[j];
+                    {
+                        q = (Quaternion)pose.fingers[i].joints[j];
+                        fingers[i].joints[j].localRotation = new Quaternion(-q.y, q.z, -q.x, q.w);
+                    }
                 
                 if(pose.debug != null && pose.debug != "")
                     Debug.Log(pose.debug);

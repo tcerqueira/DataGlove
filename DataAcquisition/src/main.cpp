@@ -93,7 +93,7 @@ void loop()
         double ax = imus[i].accel_x();
         double ay = imus[i].accel_y();
         double az = imus[i].accel_z();
-        hand.updateJoint(joint_map[i], Eigen::Vector3d(-ey, ez, -ex), Eigen::Vector3d(-ay, az, -ax));
+        hand.updateJoint(joint_map[i], Eigen::Vector3d(ex, ey, ez), Eigen::Vector3d(-ay, az, -ax));
     }
 
     // Interpolate each last finger phalange
@@ -141,18 +141,18 @@ void init_hand()
     {
         tca9548a.setChannel(mux_map[i]);
         while(!imus[i].read());
-        double ax = imus[i].raw_accel_x();
-        double ay = imus[i].raw_accel_y();
-        double az = imus[i].raw_accel_z();
+        double ax = imus[i].accel_x();
+        double ay = imus[i].accel_y();
+        double az = imus[i].accel_z();
 
         Eigen::Vector3d accel(ax, ay, az);
         Eigen::Vector3d down(0, 0, -1);
         Quaternion q = Quaternion::FromTwoVectors(down, accel);
         // Eigen::Vector3d e = q.eulerAngles();
         // hand.updateJoint(joint_map[i], Eigen::Vector3d(e.x(), e.z(), e.y()), Eigen::Vector3d(-ay, az, -ax));
-        // hand.updateJoint(joint_map[i], Quaternion(q.x(), q.z(), q.y(), q.w()), Eigen::Vector3d(-ay, az, -ax));
-        Quaternion& joint = hand.getJoint(i);
-        joint = Quaternion(q.x(), q.z(), q.y(), q.w());
+        hand.updateJoint(joint_map[i], q, Eigen::Vector3d(-ay, az, -ax));
+        // Quaternion& joint = hand.getJoint(i);
+        // joint = q;
 
         // double w, x, y, z;
         // if(az >= 0)
