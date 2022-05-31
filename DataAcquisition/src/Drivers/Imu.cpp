@@ -19,13 +19,13 @@ bool Imu::init()
 {
     if(!imu.Begin())
     {
-        Serial.print("Error initializing communication with IMU");
+        // Serial.print("Error initializing communication with IMU");
         return false;
     }
     /* Set the sample rate divider */
     if(!imu.ConfigSrd(19))
     {
-        Serial.println("Error configured SRD");
+        // Serial.println("Error configured SRD");
         return false;
     }
     timer.start();

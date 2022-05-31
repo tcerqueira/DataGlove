@@ -59,14 +59,15 @@ void setup()
     for(uint8_t i=0; i < NUMIMUS; i++)
     {
         tca9548a.setChannel(mux_map[i]);
-        imus[i].init();
+        if(!imus[i].init())
+            Serial.print("Error initializing communication with IMU");
         imus[i].calibrate();
     }
 
     // Initialize pose
     init_hand();
+    // while(!Serial) {}
     // output_data();
-    while(!Serial) {}
 }
 
 void loop()
