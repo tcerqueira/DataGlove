@@ -55,7 +55,6 @@ void setup()
     Wire.setClock(400000);
     /* Serial to display data */
     Serial.begin(115200);
-    while(!Serial) {}
     /* Initialize and configure IMU */
     for(uint8_t i=0; i < NUMIMUS; i++)
     {
@@ -65,8 +64,9 @@ void setup()
     }
 
     // Initialize pose
-    // init_hand();
+    init_hand();
     // output_data();
+    while(!Serial) {}
 }
 
 void loop()
@@ -140,22 +140,40 @@ void init_hand()
     {
         tca9548a.setChannel(mux_map[i]);
         while(!imus[i].read());
-        double ax = imus[i].accel_x();
-        double ay = imus[i].accel_y();
-        double az = imus[i].accel_z();
+        double ax = imus[i].raw_accel_x();
+        double ay = imus[i].raw_accel_y();
+        double az = imus[i].raw_accel_z();
 
         Eigen::Vector3d accel(ax, ay, az);
         Eigen::Vector3d down(0, 0, -1);
-        Quaternion orientation = Quaternion::FromTwoVectors(down, accel);
-        Eigen::Vector3d e = orientation.eulerAngles();
-        hand.updateJoint(joint_map[i], Eigen::Vector3d(-e.y(), e.z(), -e.x()), Eigen::Vector3d(-ay, az, -ax));
-    }
+        Quaternion q = Quaternion::FromTwoVectors(down, accel);
+        // Eigen::Vector3d e = q.eulerAngles();
+        // hand.updateJoint(joint_map[i], Eigen::Vector3d(e.x(), e.z(), e.y()), Eigen::Vector3d(-ay, az, -ax));
+        // hand.updateJoint(joint_map[i], Quaternion(q.x(), q.z(), q.y(), q.w()), Eigen::Vector3d(-ay, az, -ax));
+        Quaternion& joint = hand.getJoint(i);
+        joint = Quaternion(q.x(), q.z(), q.y(), q.w());
 
-    // for(uint8_t i=0; i < NUMIMUS; i++)
-    // {
-    //     tca9548a.setChannel(mux_map[i]);
-    //     while(!imus[i].read());
-    // }
+        // double w, x, y, z;
+        // if(az >= 0)
+        // {
+        //     w = sqrt((az + 1) / 2);
+        //     x = - ay / sqrt(2 * (az + 1));
+        //     y = ax / sqrt(2 * (az + 1));
+        //     z = 0;
+        // }
+        // else {
+        //     w = - ay / sqrt(2 * (1 - az));
+        //     x = sqrt((1 - az) / 2);
+        //     y = 0;
+        //     z = az / sqrt(2 * (1 - az));
+        // }
+        
+        // // Eigen::Vector3d e = Quaternion(x, y, z, w).eulerAngles();
+        // // hand.updateJoint(joint_map[i], Eigen::Vector3d(-e.y(), e.z(), -e.x()), Eigen::Vector3d(-ay, az, -ax));
+        // // hand.updateJoint(joint_map[i], Quaternion(x, y, z, w), Eigen::Vector3d(-ay, az, -ax));
+        // Quaternion& joint = hand.getJoint(i);
+        // joint = Quaternion(x, z, y, w);
+    }
 }
 
 void output_data()
