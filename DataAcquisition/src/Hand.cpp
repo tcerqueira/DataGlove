@@ -1,5 +1,7 @@
 #include "Hand.h"
 
+Quaternion orientationFromGravity(const Eigen::Vector3d &gravity);
+
 Hand::Hand()
 {
     // Wrist JSON
@@ -76,6 +78,44 @@ void Hand::serialize(String &outStr)
 void Hand::debug(const String &str)
 {
     encoded["debug"] = str;
+}
+
+Quaternion orientationFromGravity(const Eigen::Vector3d &gravity)
+{
+    Eigen::Vector3d down(0, 0, -1);
+    Quaternion q = Quaternion::FromTwoVectors(down, gravity);
+
+    return q;
+
+    // double w, x, y, z;
+    // double ax = gravity.x();
+    // double ay = gravity.y();
+    // double az = gravity.z();
+    // if(az >= 0)
+    // {
+    //     w = sqrt((az + 1) / 2);
+    //     x = - ay / sqrt(2 * (az + 1));
+    //     y = ax / sqrt(2 * (az + 1));
+    //     z = 0;
+    // }
+    // else {
+    //     w = - ay / sqrt(2 * (1 - az));
+    //     x = sqrt((1 - az) / 2);
+    //     y = 0;
+    //     z = az / sqrt(2 * (1 - az));
+    // }
+    
+    // return Quaternion(x, z, y, w);
+}
+
+void Hand::initializeJoint(uint8_t index, const Eigen::Vector3d &gravity)
+{
+    initializeJoint(getJoint(index), gravity);
+}
+
+void Hand::initializeJoint(Quaternion &joint, const Eigen::Vector3d &gravity)
+{
+    joint = orientationFromGravity(gravity);
 }
 
 void Hand::updateJoint(uint8_t index, const Eigen::Vector3d &dEuler, const Eigen::Vector3d &accel)

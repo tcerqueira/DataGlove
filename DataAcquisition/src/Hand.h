@@ -7,7 +7,6 @@ struct Finger {
     Quaternion joints[3];
 };
 
-
 class Hand
 {
 public:
@@ -26,6 +25,9 @@ public:
 
     void serialize(String &outStr);
     void debug(const String &str);
+
+    void initializeJoint(uint8_t index, const Eigen::Vector3d &gravity);
+    void initializeJoint(Quaternion &joint, const Eigen::Vector3d &gravity);
 
     void updateFinger(FingerId id, const Eigen::Vector3d dEulers[], const Eigen::Vector3d accel[]);
     void updateWrist(const Eigen::Vector3d &dEuler, const Eigen::Vector3d &accel);

@@ -144,36 +144,7 @@ void init_hand()
         double ax = imus[i].accel_x();
         double ay = imus[i].accel_y();
         double az = imus[i].accel_z();
-
-        Eigen::Vector3d accel(ax, ay, az);
-        Eigen::Vector3d down(0, 0, -1);
-        Quaternion q = Quaternion::FromTwoVectors(down, accel);
-        // Eigen::Vector3d e = q.eulerAngles();
-        // hand.updateJoint(joint_map[i], Eigen::Vector3d(e.x(), e.z(), e.y()), Eigen::Vector3d(-ay, az, -ax));
-        hand.updateJoint(joint_map[i], q, Eigen::Vector3d(-ay, az, -ax));
-        // Quaternion& joint = hand.getJoint(i);
-        // joint = q;
-
-        // double w, x, y, z;
-        // if(az >= 0)
-        // {
-        //     w = sqrt((az + 1) / 2);
-        //     x = - ay / sqrt(2 * (az + 1));
-        //     y = ax / sqrt(2 * (az + 1));
-        //     z = 0;
-        // }
-        // else {
-        //     w = - ay / sqrt(2 * (1 - az));
-        //     x = sqrt((1 - az) / 2);
-        //     y = 0;
-        //     z = az / sqrt(2 * (1 - az));
-        // }
-        
-        // // Eigen::Vector3d e = Quaternion(x, y, z, w).eulerAngles();
-        // // hand.updateJoint(joint_map[i], Eigen::Vector3d(-e.y(), e.z(), -e.x()), Eigen::Vector3d(-ay, az, -ax));
-        // // hand.updateJoint(joint_map[i], Quaternion(x, y, z, w), Eigen::Vector3d(-ay, az, -ax));
-        // Quaternion& joint = hand.getJoint(i);
-        // joint = Quaternion(x, z, y, w);
+        hand.initializeJoint(i, Eigen::Vector3d(ax, ay, az));
     }
 }
 
