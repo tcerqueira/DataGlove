@@ -25,6 +25,8 @@ public:
     Quaternion& getJoint(uint8_t index);
 
     void serialize(String &outStr);
+    void debug(const String &str);
+
     void updateFinger(FingerId id, const Eigen::Vector3d dEulers[], const Eigen::Vector3d accel[]);
     void updateWrist(const Eigen::Vector3d &dEuler, const Eigen::Vector3d &accel);
     

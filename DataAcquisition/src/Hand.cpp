@@ -67,8 +67,15 @@ void Hand::serialize(String &outStr)
             jointsArr[j]["w"] = diff.w();
         }
     }
+
     serializeJson(encoded, outStr);
+    encoded["debug"] = "";
     outStr += '\n';
+}
+
+void Hand::debug(const String &str)
+{
+    encoded["debug"] = str;
 }
 
 void Hand::updateJoint(uint8_t index, const Eigen::Vector3d &dEuler, const Eigen::Vector3d &accel)

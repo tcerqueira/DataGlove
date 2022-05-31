@@ -54,22 +54,6 @@ public class HandController : MonoBehaviour
 
         u.BeginReceive(new AsyncCallback(OnReceive), s);
         Debug.Log("Listening...");
-
-        // Test JSON parsing
-        // HandPose pose = new HandPose
-        // {
-        //     wrist = new SQuaternion(0, 0, 1, 1),
-        //     fingers = new FingerPose[] {
-        //         new FingerPose { joints = new SQuaternion[]{ new SQuaternion(1,0,0,1), new SQuaternion(0,0,0,0), new SQuaternion(0,0,0,0) }},
-        //         new FingerPose { joints = new SQuaternion[]{ new SQuaternion(1,0,0,1), new SQuaternion(0,0,0,0), new SQuaternion(0,0,0,0) }},
-        //         new FingerPose { joints = new SQuaternion[]{ new SQuaternion(1,0,0,1), new SQuaternion(0,0,0,0), new SQuaternion(0,0,0,0) }},
-        //         new FingerPose { joints = new SQuaternion[]{ new SQuaternion(1,0,0,1), new SQuaternion(0,0,0,0), new SQuaternion(0,0,0,0) }},
-        //         new FingerPose { joints = new SQuaternion[]{ new SQuaternion(1,0,0,1), new SQuaternion(0,0,0,0), new SQuaternion(0,0,0,0) }}
-        //     }
-        // };
-        // String poseStr = JsonUtility.ToJson(pose);
-        // HandPose pose2 = JsonUtility.FromJson<HandPose>(poseStr);
-        // Debug.Log(poseStr);
     }
 
     // Update is called once per frame
@@ -92,6 +76,9 @@ public class HandController : MonoBehaviour
                 for (int i=0; i < 5; i++)
                     for (int j=0; j < 3; j++)
                         fingers[i].joints[j].localRotation = (Quaternion)pose.fingers[i].joints[j];
+                
+                if(pose.debug != null && pose.debug != "")
+                    Debug.Log(pose.debug);
             }
             catch (System.Exception)
             {
@@ -143,6 +130,7 @@ public struct HandPose
 {
     public SQuaternion wrist;
     public FingerPose[] fingers;
+    public String debug;
 }
 
 // Serializable Quaternion
