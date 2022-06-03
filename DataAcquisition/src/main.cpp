@@ -130,20 +130,13 @@ void loop()
 
 void init_hand()
 {
-    // FIX ME!!
     for(uint8_t i=0; i < NUMIMUS; i++)
     {
         tca9548a.setChannel(mux_map[i]);
         while(!imus[i].read());
-    }
-
-    for(uint8_t i=0; i < NUMIMUS; i++)
-    {
-        tca9548a.setChannel(mux_map[i]);
-        while(!imus[i].read());
-        double ax = imus[i].accel_x();
-        double ay = imus[i].accel_y();
-        double az = imus[i].accel_z();
+        double ax = imus[i].raw_accel_x();
+        double ay = imus[i].raw_accel_y();
+        double az = imus[i].raw_accel_z();
         hand.initializeJoint(i, Eigen::Vector3d(ax, ay, az));
     }
 }
