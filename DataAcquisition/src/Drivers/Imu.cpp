@@ -65,18 +65,18 @@ void Imu::calibrate()
         i++;
     }
 
-    // Eigen::Vector3d accel_mean(
-    //     mean(ax, cycles),
-    //     mean(ay, cycles),
-    //     mean(az, cycles)
-    // );
-    // const double accel_ratio = accel_mean.norm() / GRAVITY;
-    // accel_offset[0] = (accel_mean.x() * accel_ratio) - accel_mean.x();
-    // accel_offset[1] = (accel_mean.y() * accel_ratio) - accel_mean.y();
-    // accel_offset[2] = (accel_mean.z() * accel_ratio) - accel_mean.z();
-    accel_offset[0] = 0;
-    accel_offset[1] = 0;
-    accel_offset[2] = 0;
+    Eigen::Vector3d accel_mean(
+        mean(ax, cycles),
+        mean(ay, cycles),
+        mean(az, cycles)
+    );
+    const double accel_ratio = accel_mean.norm() / GRAVITY;
+    accel_offset[0] = (accel_mean.x() * accel_ratio) - accel_mean.x();
+    accel_offset[1] = (accel_mean.y() * accel_ratio) - accel_mean.y();
+    accel_offset[2] = (accel_mean.z() * accel_ratio) - accel_mean.z();
+    // accel_offset[0] = 0;
+    // accel_offset[1] = 0;
+    // accel_offset[2] = 0;
     gyro_offset[0] = mean(gx, cycles);
     gyro_offset[1] = mean(gy, cycles);
     gyro_offset[2] = mean(gz, cycles);
