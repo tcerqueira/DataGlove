@@ -38,7 +38,16 @@ public:
     void updateJoint(Quaternion &joint, const Quaternion &rot, const Eigen::Vector3d &accel);
 
 private:
-    Quaternion wrist;
-    Finger fingers[5];
+    struct Pose
+    {
+        Quaternion wrist;
+        Finger fingers[5];
+    };
+
+    union
+    {
+        Pose pose;
+        Quaternion joints[16];
+    };
     StaticJsonDocument<2048> encoded;
 };
