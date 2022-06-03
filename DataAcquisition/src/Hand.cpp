@@ -82,15 +82,25 @@ void Hand::debug(const String &str)
 
 Quaternion orientationFromGravity(const Eigen::Vector3d &gravity)
 {
-    Eigen::Vector3d down(0, 0, -1);
-    Quaternion q = Quaternion::FromTwoVectors(down, gravity);
+    // https://youtu.be/CHSYgLfhwUo?t=1427
+    double ax = gravity.y();
+    double ay = gravity.x();
+    double az = -gravity.z();
+    double ex = atan2(-1 * ax, sqrt(ay*ay + az*az));
+    double ey = atan2(ay, az);
+    double ez = 0;
 
-    return q;
+    return Quaternion(ex, ey, ez);
+    
+    // Eigen::Vector3d down(0, 0, -1);
+    // Quaternion q = Quaternion::FromTwoVectors(down, gravity);
+
+    // return q;
 
     // double w, x, y, z;
     // double ax = gravity.x();
     // double ay = gravity.y();
-    // double az = gravity.z();
+    // double az = -gravity.z();
     // if(az >= 0)
     // {
     //     w = sqrt((az + 1) / 2);
@@ -106,6 +116,7 @@ Quaternion orientationFromGravity(const Eigen::Vector3d &gravity)
     // }
     
     // return Quaternion(x, z, y, w);
+
 }
 
 void Hand::initializeJoint(uint8_t index, const Eigen::Vector3d &gravity)
