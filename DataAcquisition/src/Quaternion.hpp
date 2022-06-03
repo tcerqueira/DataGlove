@@ -72,12 +72,12 @@ public:
         return q * scalar;
     }
 
-    Eigen::Vector3d eulerAngles()
+    Eigen::Vector3d eulerAngles() const
     {
         return this->toRotationMatrix().eulerAngles(0, 1, 2);
     }
 
-    JsonObject serialize(JsonObject obj)
+    JsonObject serialize(JsonObject obj) const
     {
         obj["x"] = x();
         obj["y"] = y();
@@ -86,7 +86,7 @@ public:
         return obj;
     }
 
-    JsonObject serialize(JsonArray parent)
+    JsonObject serialize(JsonArray parent) const
     {
         JsonObject obj = parent.createNestedObject();
         obj["x"] = x();
@@ -97,7 +97,7 @@ public:
     }
 
     template<unsigned int Capacity>
-    JsonObject serialize(StaticJsonDocument<Capacity> parent)
+    JsonObject serialize(StaticJsonDocument<Capacity> parent) const
     {
         JsonObject obj = parent.createNestedObject();
         obj["x"] = x();
