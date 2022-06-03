@@ -11,8 +11,8 @@ public:
     {
     }
 
-    Quaternion(float x, float y, float z, float w)
-    : Eigen::Quaterniond(w,x,y,z)
+    Quaternion(double scalar)
+    : Eigen::Quaterniond(scalar,0,0,0)
     {
     }
 
@@ -46,6 +46,30 @@ public:
     {
         this->Eigen::Quaterniond::operator=(other);
         return *this;
+    }
+
+    Quaternion& operator+=(const Quaternion &rhs)
+    {
+        this->x() = this->x() + rhs.x();
+        this->y() = this->y() + rhs.y();
+        this->z() = this->z() + rhs.z();
+        this->w() = this->w() + rhs.w();
+        return *this;
+    }
+
+    friend Quaternion operator+(Quaternion lhs, const Quaternion &rhs)
+    {
+        return Quaternion(lhs.x()+rhs.x(), lhs.y()+rhs.y(), lhs.z()+rhs.z(), lhs.w()+rhs.w());
+    }
+
+    friend Quaternion operator*(Quaternion q, const double &scalar)
+    {
+        return Quaternion(q.x()*scalar, q.y()*scalar, q.z()*scalar, q.w()*scalar);
+    }
+
+    friend Quaternion operator*(double scalar, const Quaternion &q)
+    {
+        return q * scalar;
     }
 
     Eigen::Vector3d eulerAngles()
