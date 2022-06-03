@@ -91,7 +91,7 @@ Quaternion orientationFromGravity(const Eigen::Vector3d &gravity)
     double ez = 0;
 
     return Quaternion(ex, ey, ez);
-    
+
     // Eigen::Vector3d down(0, 0, -1);
     // Quaternion q = Quaternion::FromTwoVectors(down, gravity);
 
@@ -129,6 +129,12 @@ void Hand::initializeJoint(Quaternion &joint, const Eigen::Vector3d &gravity)
     joint = orientationFromGravity(gravity);
 }
 
+void Hand::updateJoint(Quaternion &joint, const Quaternion &rot, const Eigen::Vector3d &accel)
+{
+    // https://ahrs.readthedocs.io/en/latest/filters/angular.html
+    joint *= rot;
+}
+
 void Hand::updateJoint(uint8_t index, const Eigen::Vector3d &dEuler, const Eigen::Vector3d &accel)
 {
     updateJoint(getJoint(index), Quaternion(dEuler), accel);
@@ -144,19 +150,13 @@ void Hand::updateJoint(uint8_t index, const Quaternion &rot, const Eigen::Vector
     updateJoint(getJoint(index), rot, accel);
 }
 
-void Hand::updateJoint(Quaternion &joint, const Quaternion &rot, const Eigen::Vector3d &accel)
-{
-    // https://ahrs.readthedocs.io/en/latest/filters/angular.html
-    joint *= rot;
-}
-
 void Hand::updateFinger(FingerId id, const Eigen::Vector3d dEulers[], const Eigen::Vector3d accel[])
 {
-    // Quaternion q = Eigen::AngleAxisd(dRotations[0].x(), Eigen::Vector3d::UnitX())
-    //                * Eigen::AngleAxisd(dRotations[0].y(), Eigen::Vector3d::UnitY())
-    //                * Eigen::AngleAxisd(dRotations[0].z(), Eigen::Vector3d::UnitZ());
-
-    // fingers[id].joints[0] *= q;
+    Finger &finger = fingers[id];
+    for(uint8_t i = 0; i < 3; i++)
+    {
+        updateJoint(finger.joints[i], dEulers[i], accel[i]);
+    } 
 }
 
 void Hand::updateWrist(const Eigen::Vector3d &dEuler, const Eigen::Vector3d &accel)
