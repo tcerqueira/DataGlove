@@ -93,7 +93,7 @@ void loop()
         double ax = imus[i].accel_x();
         double ay = imus[i].accel_y();
         double az = imus[i].accel_z();
-        hand.updateJoint(joint_map[i], Eigen::Vector3d(ex, ey, ez), Eigen::Vector3d(-ay, az, -ax));
+        hand.updateJoint(joint_map[i], Eigen::Vector3d(ex, ey, ez), Eigen::Vector3d(ax, ay, az));
     }
 
     // Interpolate each last finger phalange

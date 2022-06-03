@@ -132,7 +132,12 @@ void Hand::initializeJoint(Quaternion &joint, const Eigen::Vector3d &gravity)
 void Hand::updateJoint(Quaternion &joint, const Quaternion &rot, const Eigen::Vector3d &accel)
 {
     // https://ahrs.readthedocs.io/en/latest/filters/angular.html
-    joint *= rot;
+    Quaternion gyro_q = joint * rot;
+    Quaternion accel_q = orientationFromGravity(accel);
+
+    joint = gyro_q * GYRO_PART + accel_q * ACCEL_PART;
+    joint.normalize();
+    // joint *= rot;
 }
 
 void Hand::updateJoint(uint8_t index, const Eigen::Vector3d &dEuler, const Eigen::Vector3d &accel)
