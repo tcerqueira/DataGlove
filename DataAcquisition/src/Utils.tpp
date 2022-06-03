@@ -25,3 +25,13 @@ T median(T array[], uint32_t len)
     std::sort(arr, arr+len);
     return arr[len / 2];
 }
+
+template <typename T>
+T norm(T array[], uint32_t len)
+{
+    T sum = 0.0;
+    for(uint32_t i=0; i < len; i++)
+        sum += array[i] * array[i];
+    
+    return sqrt(sum);
+}

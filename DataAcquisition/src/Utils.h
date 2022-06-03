@@ -10,4 +10,7 @@ T mean(T array[], uint32_t len);
 template <typename T>
 T median(T array[], uint32_t len);
 
+template <typename T>
+T norm(T array[], uint32_t len);
+
 #include "Utils.tpp"
