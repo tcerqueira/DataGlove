@@ -134,9 +134,9 @@ void init_hand()
     {
         tca9548a.setChannel(mux_map[i]);
         while(!imus[i].read());
-        double ax = imus[i].raw_accel_x();
-        double ay = imus[i].raw_accel_y();
-        double az = imus[i].raw_accel_z();
+        double ax = imus[i].accel_x();
+        double ay = imus[i].accel_y();
+        double az = imus[i].accel_z();
         hand.initializeJoint(i, Eigen::Vector3d(ax, ay, az));
     }
 }

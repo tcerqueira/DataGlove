@@ -2,7 +2,7 @@
 #include <algorithm>
 #include "Utils.h"
 
-#define GRAVITY 9.807
+static constexpr float GRAVITY = 9.807f;
 
 Imu::Imu(SPIClass *spi, const uint8_t cs)
     : imu(spi, cs), protocol(Imu::Protocol::SPI)
@@ -18,16 +18,11 @@ Imu::Imu(TwoWire *i2c, const uint8_t addr)
 bool Imu::init()
 {
     if(!imu.Begin())
-    {
-        // Serial.print("Error initializing communication with IMU");
         return false;
-    }
     /* Set the sample rate divider */
     if(!imu.ConfigSrd(19))
-    {
-        // Serial.println("Error configured SRD");
         return false;
-    }
+
     timer.start();
     return true;
 }
