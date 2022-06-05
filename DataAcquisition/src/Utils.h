@@ -13,4 +13,7 @@ T median(T array[], uint32_t len);
 template <typename T>
 T norm(T array[], uint32_t len);
 
+template <typename T>
+T abs_tp(T n);
+
 #include "Utils.tpp"

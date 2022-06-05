@@ -35,3 +35,9 @@ T norm(T array[], uint32_t len)
     
     return sqrt(sum);
 }
+
+template <typename T>
+T abs_tp(T n)
+{
+    return n < 0 ? -n : n;
+}
