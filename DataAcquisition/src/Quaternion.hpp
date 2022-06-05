@@ -72,9 +72,9 @@ public:
         return q * scalar;
     }
 
-    Eigen::Vector3d eulerAngles() const
+    Eigen::Vector3d eulerAngles(int a0 = 0, int a1 = 1, int a2 = 2) const
     {
-        return this->toRotationMatrix().eulerAngles(0, 1, 2);
+        return this->toRotationMatrix().eulerAngles(a0, a1, a2);
     }
 
     JsonObject serialize(JsonObject obj) const
