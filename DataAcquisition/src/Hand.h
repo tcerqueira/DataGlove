@@ -14,8 +14,9 @@ public:
         THUMB = 0, INDEX, MIDDLE, RING, PINKY
     };
 
-    static constexpr float GYRO_PART = .995f;
-    static constexpr float ACCEL_PART = 1 - GYRO_PART;
+    static constexpr float STATIC_GAIN = 1-.995f;
+    static constexpr float ERROR_T1 = .1f;
+    static constexpr float ERROR_T2 = .2f;
 
 public:
     Hand();
