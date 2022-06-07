@@ -37,7 +37,7 @@ Imu imus[NUMIMUS] = {
     Imu(&Wire, Imu::I2C_ADDR_PRIM),
     Imu(&Wire, Imu::I2C_ADDR_SEC)
 };
-uint8_t mux_map[NUMIMUS] = { 1,1,2,2,3,3,4,4,5,5,6,6 };
+uint8_t mux_map[NUMIMUS] = { 1,1,2,2,3,3,4,4,5,5,0,0 };
 uint8_t joint_map[NUMIMUS] = { 0,1,2,3,4,5,7,8,10,11,13,14 };
 
 I2CMux tca9548a(0x70);
@@ -66,8 +66,6 @@ void setup()
 
     // Initialize pose
     init_hand();
-    // while(!Serial) {}
-    // output_data();
 }
 
 void loop()
@@ -93,7 +91,7 @@ void loop()
         double ax = imus[i].accel_x();
         double ay = imus[i].accel_y();
         double az = imus[i].accel_z();
-        hand.updateJoint(joint_map[i], Eigen::Vector3d(ex, ey, ez), Eigen::Vector3d(ax, ay, az));
+        hand.updateJoint(joint_map[i], Eigen::Vector3d(ex, ey, ez), Eigen::Vector3d(-ax, -ay, -az));
     }
 
     // Interpolate each last finger phalange
@@ -103,11 +101,9 @@ void loop()
         Finger& finger = hand.getFinger(i);
         Quaternion diff = finger.joints[0].inverse() * finger.joints[1];
 
-        const double angle = 65/115.0 * diff.eulerAngles().x();
-        // const double angle = diff.eulerAngles().x();
-        // finger.joints[2] = Quaternion(angle, angle, angle, angle);
+        const double angle = 65/115.0 * diff.eulerAngles().y();
         // Quaternion rotation = finger.joints[1] * Eigen::AngleAxisd(mod(angle, EIGEN_PI/2) - (EIGEN_PI/2), Eigen::Vector3d::UnitX());
-        Quaternion rotation = finger.joints[1] * Eigen::AngleAxisd(angle, Eigen::Vector3d::UnitX());
+        Quaternion rotation = finger.joints[1] * Eigen::AngleAxisd(angle, Eigen::Vector3d::UnitY());
 
         finger.joints[2] = rotation;
     }
@@ -137,7 +133,7 @@ void init_hand()
         double ax = imus[i].accel_x();
         double ay = imus[i].accel_y();
         double az = imus[i].accel_z();
-        hand.initializeJoint(i, Eigen::Vector3d(ax, ay, az));
+        hand.initializeJoint(i, Eigen::Vector3d(-ax, -ay, -az));
     }
 }
 

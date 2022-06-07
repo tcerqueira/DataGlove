@@ -110,11 +110,11 @@ inline Quaternion orientationFromGravity(const Eigen::Vector3d &gravity)
 inline Eigen::Vector3d anglesFromGravity(const Eigen::Vector3d &gravity)
 {
     // https://youtu.be/CHSYgLfhwUo?t=1427
-    double ax = gravity.y();
-    double ay = gravity.x();
-    double az = -gravity.z();
-    double ex = atan2(-1 * ax, sqrt(ay*ay + az*az));
-    double ey = atan2(ay, az);
+    double ax = gravity.x();
+    double ay = gravity.y();
+    double az = gravity.z();
+    double ex = atan2(ay, az);
+    double ey = atan2(-1 * ax, sqrt(ay*ay + az*az));
     double ez = 0;
 
     return Eigen::Vector3d(ex, ey, ez);
@@ -143,8 +143,7 @@ void Hand::updateJoint(Quaternion &joint, const Eigen::Vector3d &dEuler, const E
     else {
         gain_factor = (ERROR_T2 - em) / ERROR_T1;
     }
-    // const float ADAPTIVE_GAIN = STATIC_GAIN * gain_factor;
-    const float ADAPTIVE_GAIN = STATIC_GAIN;
+    const float ADAPTIVE_GAIN = STATIC_GAIN * gain_factor;
 
     // Quaternion gyro_q = joint * Quaternion(dEuler);
     // Quaternion accel_q = orientationFromGravity(accel);
@@ -168,7 +167,7 @@ void Hand::updateJoint(Quaternion &joint, const Eigen::Vector3d &dEuler, const E
     //         * Eigen::AngleAxisd(ey, Eigen::Vector3d::UnitY());
 
     // double w, x, y, z;
-    Eigen::Vector3d g = accel.normalized();
+    // Eigen::Vector3d g = accel.normalized();
     // double ax = g.y();
     // double ay = g.x();
     // double az = -g.z();
