@@ -55,6 +55,7 @@ void setup()
     Wire.setClock(400000);
     /* Serial to display data */
     Serial.begin(115200);
+    // while(!Serial) {};
     /* Initialize and configure IMU */
     for(uint8_t i=0; i < NUMIMUS; i++)
     {
