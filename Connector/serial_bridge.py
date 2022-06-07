@@ -14,10 +14,14 @@ def main():
         # Serial connection
         serialConn = serial.Serial(port, 115200)
         count = 0;
+        started = False;
         print("Running...");
 
         while True:
             data = serialConn.readline()
+            if not started:
+                started = True;
+                print("Started.")
             # data_dec = data.decode("UTF-8")
             # print(f'{len(data_dec)}:\t{data_dec}')
             UDPClientSocket.sendto(data, serverAddressPort)

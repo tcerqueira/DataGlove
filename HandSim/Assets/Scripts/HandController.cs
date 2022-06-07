@@ -24,6 +24,7 @@ public class HandController : MonoBehaviour
     readonly object gloveDataLock = new object();
     byte[] gloveData;
     Boolean received = false;
+    Boolean started = false;
 
     public Transform wrist;
     public Finger[] fingers = new Finger[5];
@@ -53,7 +54,7 @@ public class HandController : MonoBehaviour
         s.u = u;
 
         u.BeginReceive(new AsyncCallback(OnReceive), s);
-        Debug.Log("Listening...");
+        Debug.Log("Running...");
     }
 
     // Update is called once per frame
@@ -64,6 +65,11 @@ public class HandController : MonoBehaviour
         {
             if(!received)
                 shouldUpdate = false;
+            else if(!started)
+            {
+                started = true;
+                Debug.Log("Started.");
+            }
         }
 
         if(shouldUpdate)
@@ -72,14 +78,10 @@ public class HandController : MonoBehaviour
             {
                 HandPose pose = ParseGloveData();
 
-                Quaternion q = (Quaternion)pose.wrist;
-                wrist.localRotation = new Quaternion(-q.y, q.z, -q.x, q.w);
+                wrist.localRotation = ToFrameOfReference((Quaternion)pose.wrist);
                 for (int i=0; i < 5; i++)
                     for (int j=0; j < 3; j++)
-                    {
-                        q = (Quaternion)pose.fingers[i].joints[j];
-                        fingers[i].joints[j].localRotation = new Quaternion(-q.y, q.z, -q.x, q.w);
-                    }
+                        fingers[i].joints[j].localRotation = ToFrameOfReference((Quaternion)pose.fingers[i].joints[j]);
                 
                 if(pose.debug != null && pose.debug != "")
                     Debug.Log(pose.debug);
@@ -120,6 +122,11 @@ public class HandController : MonoBehaviour
         }
         string dataJSON = Encoding.ASCII.GetString(rawData);
         return JsonUtility.FromJson<HandPose>(dataJSON);
+    }
+
+    private Quaternion ToFrameOfReference(Quaternion q)
+    {
+        return new Quaternion(-q.y, q.z, -q.x, q.w);
     }
 }
 
