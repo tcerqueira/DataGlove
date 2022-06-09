@@ -35,14 +35,11 @@ void Imu::calibrate()
 
     // Initialize acceleration buffer
     while(!imu.Read());
-    float a_x = imu.accel_x_mps2();
-    float a_y = imu.accel_y_mps2();
-    float a_z = imu.accel_z_mps2();
     for(uint8_t i=0; i < accel_buffer_len; i++)
     {
-        accel_buffer[0][i] = a_x;
-        accel_buffer[1][i] = a_y;
-        accel_buffer[2][i] = a_z;
+        accel_buffer[0][i] = imu.accel_x_mps2();
+        accel_buffer[1][i] = imu.accel_y_mps2();
+        accel_buffer[2][i] = imu.accel_z_mps2();
     }
 
     // Sample readings and find offsets
@@ -60,15 +57,19 @@ void Imu::calibrate()
         i++;
     }
 
-    double accel_mean[3] = {
-        mean(ax, cycles),
-        mean(ay, cycles),
-        mean(az, cycles)
-    };
-    const double accel_ratio = norm(accel_mean, 3) / GRAVITY;
-    accel_offset[0] = (accel_mean[0] * accel_ratio) - accel_mean[0];
-    accel_offset[1] = (accel_mean[1] * accel_ratio) - accel_mean[1];
-    accel_offset[2] = (accel_mean[2] * accel_ratio) - accel_mean[2];
+    // double accel_mean[3] = {
+    //     mean(ax, cycles),
+    //     mean(ay, cycles),
+    //     mean(az, cycles)
+    // };
+    // const double accel_ratio = norm(accel_mean, 3) / GRAVITY;
+    // accel_offset[0] = (accel_mean[0] * accel_ratio) - accel_mean[0];
+    // accel_offset[1] = (accel_mean[1] * accel_ratio) - accel_mean[1];
+    // accel_offset[2] = (accel_mean[2] * accel_ratio) - accel_mean[2];
+
+    accel_offset[0] = mean(ax, cycles);
+    accel_offset[1] = mean(ay, cycles);
+    accel_offset[2] = mean(ay, cycles) + GRAVITY;
     
     gyro_offset[0] = mean(gx, cycles);
     gyro_offset[1] = mean(gy, cycles);
