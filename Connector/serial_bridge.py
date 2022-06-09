@@ -21,7 +21,7 @@ def main():
             data = serialConn.readline()
             if not started:
                 started = True;
-                print("Started.")
+                print("Started...")
             # data_dec = data.decode("UTF-8")
             # print(f'{len(data_dec)}:\t{data_dec}')
             UDPClientSocket.sendto(data, serverAddressPort)

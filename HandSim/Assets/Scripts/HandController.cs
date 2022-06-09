@@ -68,7 +68,7 @@ public class HandController : MonoBehaviour
             else if(!started)
             {
                 started = true;
-                Debug.Log("Started.");
+                Debug.Log("Started...");
             }
         }
 
