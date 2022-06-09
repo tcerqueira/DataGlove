@@ -102,11 +102,10 @@ void loop()
         Finger& finger = hand.getFinger(i);
         Quaternion diff = finger.joints[0].inverse() * finger.joints[1];
 
-        const double angle = 65/115.0 * diff.eulerAngles().y();
-        // Quaternion rotation = finger.joints[1] * Eigen::AngleAxisd(mod(angle, EIGEN_PI/2) - (EIGEN_PI/2), Eigen::Vector3d::UnitX());
-        Quaternion rotation = finger.joints[1] * Eigen::AngleAxisd(angle, Eigen::Vector3d::UnitY());
+        const double angle = 65/115.0 * (-2 * atan2(diff.vec().norm(), diff.w()));
+        Quaternion orientation = finger.joints[1] * Eigen::AngleAxisd(angle, Eigen::Vector3d::UnitY());
 
-        finger.joints[2] = rotation;
+        finger.joints[2] = orientation;
     }
 
     // Max serialization frame rate
