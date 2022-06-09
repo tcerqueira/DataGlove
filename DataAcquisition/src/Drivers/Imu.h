@@ -41,7 +41,7 @@ public:
     static constexpr uint8_t I2C_ADDR_PRIM = 0x68;
     static constexpr uint8_t I2C_ADDR_SEC = 0x69;
     static constexpr uint8_t accel_buffer_len = 12;
-    static constexpr uint8_t calib_cycles = 12;
+    static constexpr uint8_t calib_cycles = 50;
 
 private:
     bfs::Mpu9250 imu;
