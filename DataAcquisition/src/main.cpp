@@ -17,7 +17,6 @@ static constexpr uint32_t FRAMETIME         = FRAMETIME_UNLOCK;
 static constexpr uint32_t SERIAL_FRAMETIME  = FRAMETIME_30FPS;
 static uint32_t delta_serialization;
 
-void init_hand();
 void output_data();
 
 extern "C" uint32_t set_arm_clock(uint32_t frequency);
@@ -41,7 +40,6 @@ uint8_t mux_map[NUMIMUS] = { 1,1,2,2,3,3,4,4,5,5,0,0 };
 uint8_t joint_map[NUMIMUS] = { 0,1,2,3,4,5,7,8,10,11,13,14 };
 
 I2CMux tca9548a(0x70);
-AnalogSensor<double> flex(14, 0, 1024, 0.0, 1.0);
 
 Hand hand;
 
@@ -66,7 +64,15 @@ void setup()
     }
 
     // Initialize pose
-    init_hand();
+    for(uint8_t i=0; i < NUMIMUS; i++)
+    {
+        tca9548a.setChannel(mux_map[i]);
+        while(!imus[i].read());
+        double ax = imus[i].accel_x();
+        double ay = imus[i].accel_y();
+        double az = imus[i].accel_z();
+        hand.initializeJoint(i, Eigen::Vector3d(-ax, -ay, -az));
+    }
 }
 
 void loop()
@@ -122,19 +128,6 @@ void loop()
     uint32_t delta = frame.stop();
     if(delta < FRAMETIME)
         delayMicroseconds(FRAMETIME - delta);
-}
-
-void init_hand()
-{
-    for(uint8_t i=0; i < NUMIMUS; i++)
-    {
-        tca9548a.setChannel(mux_map[i]);
-        while(!imus[i].read());
-        double ax = imus[i].accel_x();
-        double ay = imus[i].accel_y();
-        double az = imus[i].accel_z();
-        hand.initializeJoint(i, Eigen::Vector3d(-ax, -ay, -az));
-    }
 }
 
 void output_data()
