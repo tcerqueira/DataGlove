@@ -18,6 +18,7 @@ static constexpr uint32_t SERIAL_FRAMETIME  = FRAMETIME_30FPS;
 static uint32_t delta_serialization;
 
 void output_data();
+void offline_calibration(uint8_t i);
 
 extern "C" uint32_t set_arm_clock(uint32_t frequency);
 
@@ -48,13 +49,13 @@ void setup()
     // Set clock speed (https://forum.pjrc.com/threads/58688-Teensy-4-0-Clock-speed-influences-delay-and-SPI)
     set_arm_clock(600000000);
     // ############# I2C #############
-    /* Start the I2C bus */
+    // Start the I2C bus
     Wire.begin();
     Wire.setClock(400000);
-    /* Serial to display data */
+    // Serial to display data
     Serial.begin(115200);
     // while(!Serial) {};
-    /* Initialize and configure IMU */
+    // Initialize and configure IMU
     for(uint8_t i=0; i < NUMIMUS; i++)
     {
         tca9548a.setChannel(mux_map[i]);
@@ -62,6 +63,12 @@ void setup()
             Serial.print("Error initializing communication with IMU");
         imus[i].calibrate();
     }
+
+    // Offline calibration
+    // for(uint8_t i=0; i < NUMIMUS; i++)
+    // {
+    //     offline_calibration(i);
+    // }
 
     // Initialize pose
     for(uint8_t i=0; i < NUMIMUS; i++)
@@ -134,5 +141,32 @@ void output_data()
 {
     String payload;
     hand.serialize(payload);
-    Serial.print(payload);
+    Serial.println(payload);
+}
+
+void offline_calibration(uint8_t i)
+{
+    while(!Serial) {};
+    for(uint32_t j=0; j < 100000; j++)
+    {
+        tca9548a.setChannel(mux_map[i]);
+        while(!imus[i].read());
+
+        static constexpr int df = 15;
+        Serial.print(i);
+        Serial.print(",");
+        Serial.print(j);
+        Serial.print(",");
+        Serial.print(imus[i].raw_gyro_x(), df);
+        Serial.print(",");
+        Serial.print(imus[i].raw_gyro_y(), df);
+        Serial.print(",");
+        Serial.print(imus[i].raw_gyro_z(), df);
+        Serial.print(",");
+        Serial.print(imus[i].raw_accel_x(), df);
+        Serial.print(",");
+        Serial.print(imus[i].raw_accel_y(), df);
+        Serial.print(",");
+        Serial.println(imus[i].raw_accel_z(), df);
+    }
 }

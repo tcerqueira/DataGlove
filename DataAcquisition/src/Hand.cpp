@@ -71,7 +71,6 @@ void Hand::serialize(String &outStr)
 
     serializeJson(encoded, outStr);
     encoded["debug"] = "";
-    outStr += '\n';
 }
 
 void Hand::debug(const String &str)
