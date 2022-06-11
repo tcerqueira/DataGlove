@@ -13,8 +13,8 @@ public:
         I2C
     };
 
-    Imu(SPIClass *spi, const uint8_t cs);
-    Imu(TwoWire *i2c, const uint8_t addr);
+    Imu(SPIClass *spi, const uint8_t cs, float gx_offset=0, float gy_offset=0, float gz_offset=0);
+    Imu(TwoWire *i2c, const uint8_t addr, float gx_offset=0, float gy_offset=0, float gz_offset=0);
 
     bool init();
     void calibrate();
@@ -48,8 +48,8 @@ private:
     Protocol protocol;
     double accel_mps2[3];
     double gyro_drad[3];
-    double accel_offset[3] = {};
-    double gyro_offset[3] = {};
+    float accel_offset[3] = {};
+    float gyro_offset[3];
     float accel_buffer[3][accel_buffer_len];
     uint8_t accel_buffer_index = 0;
     bool recv_new = false;

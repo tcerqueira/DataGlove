@@ -4,16 +4,15 @@
 
 static constexpr float GRAVITY = 9.807f;
 
-Imu::Imu(SPIClass *spi, const uint8_t cs)
-    : imu(spi, cs), protocol(Imu::Protocol::SPI)
+Imu::Imu(SPIClass *spi, const uint8_t cs, float gx_offset, float gy_offset, float gz_offset)
+    : imu(spi, cs), protocol(Imu::Protocol::SPI), gyro_offset{gx_offset, gy_offset, gz_offset}
 {
 }
 
-Imu::Imu(TwoWire *i2c, const uint8_t addr)
-    : imu(i2c, (bfs::Mpu9250::I2cAddr)addr), protocol(Imu::Protocol::I2C)
+Imu::Imu(TwoWire *i2c, const uint8_t addr, float gx_offset, float gy_offset, float gz_offset)
+    : imu(i2c, (bfs::Mpu9250::I2cAddr)addr), protocol(Imu::Protocol::I2C), gyro_offset{gx_offset, gy_offset, gz_offset}
 {
 }
-
 
 bool Imu::init()
 {
