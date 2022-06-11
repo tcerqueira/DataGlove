@@ -5,7 +5,7 @@ import datetime
 
 def main():
     if len(sys.argv) != 2:
-        exit(f"Usage: python serial_bridge.py <PORT>\nExample: python3 serial_bridge.py COM3")
+        exit(f"Usage: python offline_calibration.py <PORT>\nExample: python3 offline_calibration.py COM3")
 
     port = sys.argv[1];
     # Serial connection
