@@ -1,7 +1,7 @@
 #include <Arduino.h>
-#include "Utils.h"
-#include "Hand.h"
-#include "Calibration.h"
+#include "Utils/Utils.h"
+#include "Core/Hand.h"
+#include "Core/Calibration.h"
 #include "Drivers/Imu.h"
 #include "Drivers/I2CMux.hpp"
 #include "Drivers/AnalogSensor.hpp"
@@ -19,7 +19,6 @@ static constexpr uint32_t SERIAL_FRAMETIME  = FRAMETIME_30FPS;
 static uint32_t delta_serialization;
 
 void output_data();
-void offline_calibration(uint8_t i);
 
 extern "C" uint32_t set_arm_clock(uint32_t frequency);
 
@@ -64,12 +63,6 @@ void setup()
             Serial.print("Error initializing communication with IMU");
         imus[i].calibrate();
     }
-
-    // Offline calibration
-    // for(uint8_t i=0; i < NUMIMUS; i++)
-    // {
-    //     offline_calibration(i);
-    // }
 
     // Initialize pose
     for(uint8_t i=0; i < NUMIMUS; i++)
@@ -143,31 +136,4 @@ void output_data()
     String payload;
     hand.serialize(payload);
     Serial.println(payload);
-}
-
-void offline_calibration(uint8_t i)
-{
-    while(!Serial) {};
-    for(uint32_t j=0; j < 100000; j++)
-    {
-        tca9548a.setChannel(mux_map[i]);
-        while(!imus[i].read());
-
-        static constexpr int df = 15;
-        Serial.print(i);
-        Serial.print(",");
-        Serial.print(j);
-        Serial.print(",");
-        Serial.print(imus[i].raw_gyro_x(), df);
-        Serial.print(",");
-        Serial.print(imus[i].raw_gyro_y(), df);
-        Serial.print(",");
-        Serial.print(imus[i].raw_gyro_z(), df);
-        Serial.print(",");
-        Serial.print(imus[i].raw_accel_x(), df);
-        Serial.print(",");
-        Serial.print(imus[i].raw_accel_y(), df);
-        Serial.print(",");
-        Serial.println(imus[i].raw_accel_z(), df);
-    }
 }
