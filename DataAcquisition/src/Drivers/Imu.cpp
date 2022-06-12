@@ -77,7 +77,7 @@ void Imu::calibrate()
 
 bool Imu::read() // https://www.youtube.com/watch?v=CHSYgLfhwUo
 {
-    delta_us = timer.stop();
+    uint32_t delta_us = timer.stop();
     recv_new = imu.Read();
     if(!recv_new)
         return recv_new;

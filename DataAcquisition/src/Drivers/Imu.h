@@ -53,6 +53,5 @@ private:
     float accel_buffer[3][accel_buffer_len];
     uint8_t accel_buffer_index = 0;
     bool recv_new = false;
-    uint32_t delta_us = 1000;
     Timer timer;
 };
