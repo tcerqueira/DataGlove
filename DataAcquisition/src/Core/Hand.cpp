@@ -1,5 +1,5 @@
 #include "Hand.h"
-#include "Utils.h"
+#include "Utils/Utils.h"
 
 static constexpr float GRAVITY = 9.807f;
 
