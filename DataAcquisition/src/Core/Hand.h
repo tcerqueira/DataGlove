@@ -25,7 +25,6 @@ public:
     Quaternion& getJoint(uint8_t index);
 
     void serialize(String &outStr);
-    void debug(const String &str);
 
     void initializeJoint(uint8_t index, const Eigen::Vector3d &gravity);
     void initializeJoint(Quaternion &joint, const Eigen::Vector3d &gravity);

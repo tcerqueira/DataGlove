@@ -13,7 +13,6 @@ def main():
     with socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM) as UDPClientSocket:
         # Serial connection
         serialConn = serial.Serial(port, 115200)
-        count = 0;
         started = False;
         print("Running...");
 
@@ -22,10 +21,12 @@ def main():
             if not started:
                 started = True;
                 print("Started...")
-            # data_dec = data.decode("UTF-8")
-            # print(f'{len(data_dec)}:\t{data_dec}')
-            UDPClientSocket.sendto(data, serverAddressPort)
-            count = count + 1
+
+            data_dec = data.decode("UTF-8")
+            if data_dec[0] == '{':
+                UDPClientSocket.sendto(data, serverAddressPort)
+            else:
+                print(data_dec)
 
         serialConn.close()
 

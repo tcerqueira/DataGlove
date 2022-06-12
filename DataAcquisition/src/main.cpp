@@ -60,7 +60,10 @@ void setup()
     {
         tca9548a.setChannel(mux_map[i]);
         if(!imus[i].init())
+        {
             Serial.print("Error initializing communication with IMU");
+            Serial.println(i);
+        }
         imus[i].calibrate();
     }
 

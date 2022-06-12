@@ -70,12 +70,7 @@ void Hand::serialize(String &outStr)
     }
 
     serializeJson(encoded, outStr);
-    encoded["debug"] = "";
-}
-
-void Hand::debug(const String &str)
-{
-    encoded["debug"] = str;
+    // encoded["debug"] = "";
 }
 
 inline Quaternion orientationFromGravity(const Eigen::Vector3d &gravity)
