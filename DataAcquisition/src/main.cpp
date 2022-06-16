@@ -2,6 +2,7 @@
 #include "Utils/Utils.h"
 #include "Core/Hand.h"
 #include "Core/Calibration.h"
+#include "Drivers/Button.hpp"
 #include "Drivers/Imu.h"
 #include "Drivers/I2CMux.hpp"
 #include "Drivers/AnalogSensor.hpp"
@@ -41,6 +42,7 @@ uint8_t mux_map[NUMIMUS] = { 1,1,2,2,3,3,4,4,5,5,0,0 };
 uint8_t joint_map[NUMIMUS] = { 0,1,2,3,4,5,7,8,10,11,13,14 };
 
 I2CMux tca9548a(0x70);
+Button<ButtonState::BTN_HIGH> rstBtn(5, 50000);     // pin 5, 50ms debounce delay
 
 Hand hand;
 
@@ -83,6 +85,11 @@ void loop()
 {
     // Start timing this frame
     Timer frame;
+    // Reset button click
+    if(rstBtn.clicked())
+    {
+        Serial.println("CLICKED");
+    }
     // Read, filter and process Imu readings
     for(uint8_t i=0; i < NUMIMUS; i++)
     {
