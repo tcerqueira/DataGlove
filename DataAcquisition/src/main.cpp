@@ -19,6 +19,7 @@ static constexpr uint32_t FRAMETIME         = FRAMETIME_UNLOCK;
 static constexpr uint32_t SERIAL_FRAMETIME  = FRAMETIME_30FPS;
 static uint32_t delta_serialization;
 
+void init_hand();
 void output_data();
 
 extern "C" uint32_t set_arm_clock(uint32_t frequency);
@@ -70,15 +71,7 @@ void setup()
     }
 
     // Initialize pose
-    for(uint8_t i=0; i < NUMIMUS; i++)
-    {
-        tca9548a.setChannel(mux_map[i]);
-        while(!imus[i].read());
-        double ax = imus[i].accel_x();
-        double ay = imus[i].accel_y();
-        double az = imus[i].accel_z();
-        hand.initializeJoint(i, Eigen::Vector3d(-ax, -ay, -az));
-    }
+    init_hand();
 }
 
 void loop()
@@ -88,7 +81,8 @@ void loop()
     // Reset button click
     if(rstBtn.clicked())
     {
-        Serial.println("CLICKED");
+        init_hand();
+        Serial.println("Pose reset");
     }
     // Read, filter and process Imu readings
     for(uint8_t i=0; i < NUMIMUS; i++)
@@ -139,6 +133,19 @@ void loop()
     uint32_t delta = frame.stop();
     if(delta < FRAMETIME)
         delayMicroseconds(FRAMETIME - delta);
+}
+
+void init_hand()
+{
+    for(uint8_t i=0; i < NUMIMUS; i++)
+    {
+        tca9548a.setChannel(mux_map[i]);
+        while(!imus[i].read());
+        double ax = imus[i].accel_x();
+        double ay = imus[i].accel_y();
+        double az = imus[i].accel_z();
+        hand.initializeJoint(i, Eigen::Vector3d(-ax, -ay, -az));
+    }
 }
 
 void output_data()

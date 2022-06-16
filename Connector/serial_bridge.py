@@ -26,7 +26,7 @@ def main():
             if data_dec[0] == '{':
                 UDPClientSocket.sendto(data, serverAddressPort)
             else:
-                print(data_dec)
+                print(data_dec.rstrip())
 
         serialConn.close()
 
