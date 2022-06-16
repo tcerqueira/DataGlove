@@ -116,15 +116,51 @@ void Hand::updateJoint(Quaternion &joint, const Eigen::Vector3d &dEuler, const E
     }
     const float ADAPTIVE_GAIN = STATIC_GAIN * gain_factor;
 
-    Quaternion qw = Quaternion(dEuler);
-    Quaternion predicted_w = joint * qw;
+    const Quaternion &q = joint;
+    const Eigen::Vector3d &e = dEuler;
+    // Attitude propagation
+    Quaternion predicted_w;
+    predicted_w.w() = q.w() - e.x()/2 * q.x() - e.y()/2 * q.y() - e.z()/2 * q.z();
+    predicted_w.x() = q.x() + e.x()/2 * q.w() - e.y()/2 * q.z() + e.z()/2 * q.y();
+    predicted_w.y() = q.y() + e.x()/2 * q.z() + e.y()/2 * q.w() - e.z()/2 * q.x();
+    predicted_w.z() = q.z() - e.x()/2 * q.y() + e.y()/2 * q.x() + e.z()/2 * q.w();
     Eigen::Vector3d predicted_g = predicted_w * accel;
-
+    // Attitude correction
     Quaternion dqacc = Quaternion::FromTwoVectors(predicted_g, Eigen::Vector3d(0, 0, 1));
     dqacc = Quaternion() * (1-ADAPTIVE_GAIN) + dqacc * ADAPTIVE_GAIN;
     dqacc.normalize();
 
     joint = predicted_w * dqacc;
+}
+
+void Hand::updateJoint(Quaternion &joint, const Quaternion &rot, const Eigen::Vector3d &accel)
+{
+    updateJoint(joint, rot.eulerAngles(), accel);
+}
+
+void Hand::updateJoint(uint8_t index, const Eigen::Vector3d &dEuler, const Eigen::Vector3d &accel)
+{
+    updateJoint(joints[index], dEuler, accel);
+}
+
+void Hand::updateJoint(uint8_t index, const Quaternion &rot, const Eigen::Vector3d &accel)
+{
+    updateJoint(joints[index], rot.eulerAngles(), accel);
+}
+
+void Hand::updateFinger(FingerId id, const Eigen::Vector3d dEulers[], const Eigen::Vector3d accel[])
+{
+    Finger &finger = pose.fingers[id];
+    for(uint8_t i = 0; i < 3; i++)
+    {
+        updateJoint(finger.joints[i], dEulers[i], accel[i]);
+    } 
+}
+
+void Hand::updateWrist(const Eigen::Vector3d &dEuler, const Eigen::Vector3d &accel)
+{
+    updateJoint(pose.wrist, dEuler, accel);
+}
 
     // joint *= Quaternion(dEuler);
 
@@ -218,33 +254,3 @@ void Hand::updateJoint(Quaternion &joint, const Eigen::Vector3d &dEuler, const E
 
     // joint = gyro_q * (1-ADAPTIVE_GAIN) + accel_q * ADAPTIVE_GAIN;
     // joint.normalize();
-}
-
-void Hand::updateJoint(Quaternion &joint, const Quaternion &rot, const Eigen::Vector3d &accel)
-{
-    updateJoint(joint, rot.eulerAngles(), accel);
-}
-
-void Hand::updateJoint(uint8_t index, const Eigen::Vector3d &dEuler, const Eigen::Vector3d &accel)
-{
-    updateJoint(joints[index], dEuler, accel);
-}
-
-void Hand::updateJoint(uint8_t index, const Quaternion &rot, const Eigen::Vector3d &accel)
-{
-    updateJoint(joints[index], rot.eulerAngles(), accel);
-}
-
-void Hand::updateFinger(FingerId id, const Eigen::Vector3d dEulers[], const Eigen::Vector3d accel[])
-{
-    Finger &finger = pose.fingers[id];
-    for(uint8_t i = 0; i < 3; i++)
-    {
-        updateJoint(finger.joints[i], dEulers[i], accel[i]);
-    } 
-}
-
-void Hand::updateWrist(const Eigen::Vector3d &dEuler, const Eigen::Vector3d &accel)
-{
-    updateJoint(pose.wrist, dEuler, accel);
-}
