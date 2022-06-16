@@ -28,7 +28,7 @@ bool Imu::init()
 
 void Imu::calibrate()
 {
-    constexpr const uint16_t cycles = calib_cycles;
+    constexpr uint16_t cycles = calib_cycles;
     float gx[cycles], gy[cycles], gz[cycles];
     float ax[cycles], ay[cycles], az[cycles];
 

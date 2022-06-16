@@ -4,6 +4,7 @@
 #include "Drivers/I2CMux.hpp"
 
 #define NUMIMUS 12
+#define CALIBRATION_SAMPLES 400
 
 void offline_calibration(uint8_t i);
 
@@ -66,7 +67,7 @@ void loop()
 void offline_calibration(uint8_t i)
 {
     tca9548a.setChannel(mux_map[i]);
-    for(uint32_t j=0; j < 15000; j++)
+    for(uint32_t j=0; j < CALIBRATION_SAMPLES; j++)
     {
         while(!imus[i].read());
 
