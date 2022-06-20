@@ -43,7 +43,7 @@ uint8_t mux_map[NUMIMUS] = { 1,1,2,2,3,3,4,4,5,5,0,0 };
 uint8_t joint_map[NUMIMUS] = { 0,1,2,3,4,5,7,8,10,11,13,14 };
 
 I2CMux tca9548a(0x70);
-Button<ButtonState::BTN_HIGH> rstBtn(5, 50000);     // pin 5, 50ms debounce delay
+Button<HIGH> rstBtn(5);     // pin 5, 50ms debounce delay
 
 Hand hand;
 

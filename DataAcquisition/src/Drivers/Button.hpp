@@ -2,17 +2,11 @@
 #include <stdint.h>
 #include "Timer.hpp"
 
-enum ButtonState : bool
-{
-    BTN_LOW = false,
-    BTN_HIGH = true
-};
-
-template <ButtonState activationState>
+template <bool activationState>
 class Button
 {
 public:
-    Button(uint8_t pin, uint32_t debounceTime=0)
+    Button(uint8_t pin, uint32_t debounceTime=50000)
         : pin(pin), debounceTime(debounceTime)
     {
         pinMode(pin, INPUT);
