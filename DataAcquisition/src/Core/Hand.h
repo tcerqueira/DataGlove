@@ -29,13 +29,11 @@ public:
     void initializeJoint(uint8_t index, const Eigen::Vector3d &gravity);
     void initializeJoint(Quaternion &joint, const Eigen::Vector3d &gravity);
 
-    void updateFinger(FingerId id, const Eigen::Vector3d dEulers[], const Eigen::Vector3d accel[]);
-    void updateWrist(const Eigen::Vector3d &dEuler, const Eigen::Vector3d &accel);
+    void updateFinger(FingerId id, const Eigen::Vector3d dEuler[], const Eigen::Vector3d gravity[]);
+    void updateWrist(const Eigen::Vector3d &dEuler, const Eigen::Vector3d &gravity);
     
-    void updateJoint(uint8_t index, const Eigen::Vector3d &dEuler, const Eigen::Vector3d &accel);
-    void updateJoint(Quaternion &joint, const Eigen::Vector3d &dEuler, const Eigen::Vector3d &accel);
-    void updateJoint(uint8_t index, const Quaternion &rot, const Eigen::Vector3d &accel);
-    void updateJoint(Quaternion &joint, const Quaternion &rot, const Eigen::Vector3d &accel);
+    void updateJoint(uint8_t index, const Eigen::Vector3d &dEuler, const Eigen::Vector3d &gravity);
+    void updateJoint(Quaternion &joint, const Eigen::Vector3d &dEuler, const Eigen::Vector3d &gravity);
 
 private:
     struct Pose
