@@ -55,35 +55,50 @@ void setup()
     // Start the I2C bus
     Wire.begin();
     Wire.setClock(400000);
+
     // Serial to display data
     Serial.begin(115200);
-    // while(!Serial) {};
+    while(!Serial) {};
+
     // Initialize and configure IMU
+    Serial.println("Initializing IMUs...");
     for(uint8_t i=0; i < NUMIMUS; i++)
     {
         tca9548a.setChannel(mux_map[i]);
-        if(!imus[i].init())
+        while(!imus[i].init())
         {
             Serial.print("Error initializing communication with IMU");
-            Serial.println(i);
+            Serial.print(i);
+            Serial.println(". Retrying...");
+            delay(3000);
         }
+    }
+
+    // Calibrating IMUs
+    Serial.println("Calibrating IMUs...");
+    for(uint8_t i=0; i < NUMIMUS; i++)
+    {
+        tca9548a.setChannel(mux_map[i]);
         imus[i].calibrate();
     }
 
     // Initialize pose
     init_hand();
+    Serial.println("Started...");
 }
 
 void loop()
 {
     // Start timing this frame
     Timer frame;
+
     // Reset button click
     if(rstBtn.clicked())
     {
         init_hand();
-        Serial.println("Pose reset");
+        Serial.println("Pose reset.");
     }
+
     // Read, filter and process Imu readings
     for(uint8_t i=0; i < NUMIMUS; i++)
     {
@@ -100,10 +115,10 @@ void loop()
         double ex = imus[i].gyro_x();
         double ey = imus[i].gyro_y();
         double ez = imus[i].gyro_z();
-        double ax = imus[i].accel_x();
-        double ay = imus[i].accel_y();
-        double az = imus[i].accel_z();
-        hand.updateJoint(joint_map[i], Eigen::Vector3d(ex, ey, ez), Eigen::Vector3d(-ax, -ay, -az));
+        double ax = -imus[i].accel_x();
+        double ay = -imus[i].accel_y();
+        double az = -imus[i].accel_z();
+        hand.updateJoint(joint_map[i], Eigen::Vector3d(ex, ey, ez), Eigen::Vector3d(ax, ay, az));
     }
 
     // Interpolate each last finger phalange
@@ -141,10 +156,10 @@ void init_hand()
     {
         tca9548a.setChannel(mux_map[i]);
         while(!imus[i].read());
-        double ax = imus[i].accel_x();
-        double ay = imus[i].accel_y();
-        double az = imus[i].accel_z();
-        hand.initializeJoint(i, Eigen::Vector3d(-ax, -ay, -az));
+        const double ax = -imus[i].accel_x();
+        const double ay = -imus[i].accel_y();
+        const double az = -imus[i].accel_z();
+        hand.initializeJoint(i, Eigen::Vector3d(ax, ay, az));
     }
 }
 

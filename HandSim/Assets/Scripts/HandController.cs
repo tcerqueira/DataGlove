@@ -24,7 +24,6 @@ public class HandController : MonoBehaviour
     readonly object gloveDataLock = new object();
     byte[] gloveData;
     Boolean received = false;
-    Boolean started = false;
 
     public Transform wrist;
     public Finger[] fingers = new Finger[5];
@@ -65,11 +64,6 @@ public class HandController : MonoBehaviour
         {
             if(!received)
                 shouldUpdate = false;
-            else if(!started)
-            {
-                started = true;
-                Debug.Log("Started...");
-            }
         }
 
         if(shouldUpdate)
@@ -82,9 +76,6 @@ public class HandController : MonoBehaviour
                 for (int i=0; i < 5; i++)
                     for (int j=0; j < 3; j++)
                         fingers[i].joints[j].localRotation = ToFrameOfReference((Quaternion)pose.fingers[i].joints[j]);
-                
-                if(pose.debug != null && pose.debug != "")
-                    Debug.Log(pose.debug);
             }
             catch (System.Exception)
             {
@@ -100,14 +91,15 @@ public class HandController : MonoBehaviour
         UdpClient client = state.u;
         IPEndPoint endpoint = state.e;
 
-        byte[] receiveBytes;
         lock (gloveDataLock)
         {
             gloveData = client.EndReceive(ar, ref endpoint);
-            received = true;
-            receiveBytes = (byte[])gloveData.Clone();
+            string receiveString = Encoding.ASCII.GetString(gloveData);
+            if(receiveString[0] != '{')
+                Debug.Log(receiveString);
+            else
+                received = true;
         }
-        string receiveString = Encoding.ASCII.GetString(receiveBytes);
 
         client.BeginReceive(new AsyncCallback(OnReceive), state);
     }
@@ -120,8 +112,8 @@ public class HandController : MonoBehaviour
             rawData = (byte[])gloveData.Clone();
             received = false;
         }
-        string dataJSON = Encoding.ASCII.GetString(rawData);
-        return JsonUtility.FromJson<HandPose>(dataJSON);
+        string strJSON = Encoding.ASCII.GetString(rawData);
+        return JsonUtility.FromJson<HandPose>(strJSON);
     }
 
     private Quaternion ToFrameOfReference(Quaternion q)

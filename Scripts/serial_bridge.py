@@ -10,25 +10,19 @@ def main():
 
     # Create a UDP socket at client side
     serverAddressPort = ("127.0.0.1", 5433)
-    with socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM) as UDPClientSocket:
+    with (
+        socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM) as UDPClientSocket,
+        serial.Serial(port, 115200) as serialConn
+    ):
         # Serial connection
-        serialConn = serial.Serial(port, 115200)
-        started = False;
         print("Running...");
-
         while True:
             data = serialConn.readline()
-            if not started:
-                started = True;
-                print("Started...")
-
-            data_dec = data.decode("UTF-8")
-            if data_dec[0] == '{':
-                UDPClientSocket.sendto(data, serverAddressPort)
-            else:
+            data_dec = data.decode()
+            if data_dec[0] != '{':
                 print(data_dec.rstrip())
 
-        serialConn.close()
+            UDPClientSocket.sendto(data, serverAddressPort)
 
 
 if __name__ == '__main__':
