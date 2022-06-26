@@ -12,13 +12,12 @@ public:
 
 private:
     uint8_t i2c_addr;
-    uint8_t current_channel = 0;
+    uint8_t current_channel = 255;      // invalid before initialization
 };
 
 I2CMux::I2CMux(uint8_t i2c_addr)
     : i2c_addr(i2c_addr)
 {
-    setChannel(current_channel);
 }
 
 void I2CMux::setChannel(uint8_t channel)
