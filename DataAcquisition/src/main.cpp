@@ -112,12 +112,12 @@ void loop()
         if(!imus[i].new_data())
             continue;
 
-        double ex = imus[i].gyro_x();
-        double ey = imus[i].gyro_y();
-        double ez = imus[i].gyro_z();
-        double ax = -imus[i].accel_x();
-        double ay = -imus[i].accel_y();
-        double az = -imus[i].accel_z();
+        const double ex = imus[i].gyro_x();
+        const double ey = imus[i].gyro_y();
+        const double ez = imus[i].gyro_z();
+        const double ax = -imus[i].accel_x();
+        const double ay = -imus[i].accel_y();
+        const double az = -imus[i].accel_z();
         hand.updateJoint(joint_map[i], Eigen::Vector3d(ex, ey, ez), Eigen::Vector3d(ax, ay, az));
     }
 
@@ -135,8 +135,7 @@ void loop()
     }
 
     // Max serialization frame rate
-    uint32_t delta_intermidiate = frame.elapsed_now();
-    delta_serialization += delta_intermidiate;
+    delta_serialization += frame.elapsed_now();
     if(delta_serialization > SERIAL_FRAMETIME)
     {
         // Serialize and send data

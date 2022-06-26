@@ -82,12 +82,10 @@ bool Imu::read() // https://www.youtube.com/watch?v=CHSYgLfhwUo
     if(!recv_new)
         return recv_new;
 
-    float ax_filt, ay_filt, az_filt;
-
     push_accel_buffer(imu.accel_x_mps2(), imu.accel_y_mps2(), imu.accel_z_mps2());
-    ax_filt = median(accel_buffer[0], Imu::accel_buffer_len);
-    ay_filt = median(accel_buffer[1], Imu::accel_buffer_len);
-    az_filt = median(accel_buffer[2], Imu::accel_buffer_len);
+    float ax_filt = median(accel_buffer[0], Imu::accel_buffer_len);
+    float ay_filt = median(accel_buffer[1], Imu::accel_buffer_len);
+    float az_filt = median(accel_buffer[2], Imu::accel_buffer_len);
     accel_mps2[0] = (ax_filt - accel_offset[0]);
     accel_mps2[1] = (ay_filt - accel_offset[1]);
     accel_mps2[2] = (az_filt - accel_offset[2]);

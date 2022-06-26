@@ -81,12 +81,12 @@ inline Quaternion orientationFromGravity(const Eigen::Vector3d &gravity)
 inline Eigen::Vector3d anglesFromGravity(const Eigen::Vector3d &gravity)
 {
     // https://youtu.be/CHSYgLfhwUo?t=1427
-    double ax = gravity.x();
-    double ay = gravity.y();
-    double az = gravity.z();
-    double ex = atan2(ay, az);
-    double ey = atan2(-1 * ax, sqrt(ay*ay + az*az));
-    double ez = 0;
+    const double ax = gravity.x();
+    const double ay = gravity.y();
+    const double az = gravity.z();
+    const double ex = atan2(ay, az);
+    const double ey = atan2(-1 * ax, sqrt(ay*ay + az*az));
+    const double ez = 0;
 
     return Eigen::Vector3d(ex, ey, ez);
 }
