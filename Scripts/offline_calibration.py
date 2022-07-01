@@ -36,7 +36,7 @@ def main():
             if f and not f.closed:
                 f.close()
             f = open(f'calib{current_imu}_{now_str}.csv', 'w')
-            f.write("imu,it,ex,ey,ez,ax,ay,az\n")
+            f.write("imu,it,ex,ey,ez,ax,ay,az,temp\n")
 
         print(data_dec)
         f.write(data_dec)

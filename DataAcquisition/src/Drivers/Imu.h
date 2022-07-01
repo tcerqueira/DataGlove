@@ -26,6 +26,7 @@ public:
     double gyro_x()     { return gyro_drad[0];       }
     double gyro_y()     { return gyro_drad[1];       }
     double gyro_z()     { return gyro_drad[2];       }
+    float temperature() { return imu.die_temp_c();   }
     float raw_accel_x() { return imu.accel_x_mps2(); }
     float raw_accel_y() { return imu.accel_y_mps2(); }
     float raw_accel_z() { return imu.accel_z_mps2(); }

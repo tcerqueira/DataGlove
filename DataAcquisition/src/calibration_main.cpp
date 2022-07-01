@@ -86,6 +86,8 @@ void offline_calibration(uint8_t i)
         Serial.print(",");
         Serial.print(imus[i].raw_accel_y(), df);
         Serial.print(",");
-        Serial.println(imus[i].raw_accel_z(), df);
+        Serial.print(imus[i].raw_accel_z(), df);
+        Serial.print(",");
+        Serial.println(imus[i].temperature());
     }
 }
