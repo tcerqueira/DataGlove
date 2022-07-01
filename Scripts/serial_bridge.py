@@ -18,7 +18,7 @@ def main():
         print("Running...");
         while True:
             data = serialConn.readline()
-            data_dec = data.decode()
+            data_dec = data.decode('ascii')
             if data_dec[0] != '{':
                 print(data_dec.rstrip())
 
