@@ -4,7 +4,7 @@
 #include "Drivers/I2CMux.hpp"
 
 #define NUMIMUS 12
-#define CALIBRATION_SAMPLES 400
+#define CALIBRATION_SAMPLES 10000
 
 void offline_calibration(uint8_t i);
 
@@ -45,10 +45,12 @@ void setup()
     for(uint8_t i=0; i < NUMIMUS; i++)
     {
         tca9548a.setChannel(mux_map[i]);
-        if(!imus[i].init())
+        while(!imus[i].init())
         {
             Serial.print("Error initializing communication with IMU");
-            Serial.println(i);
+            Serial.print(i);
+            Serial.println(". Retrying...");
+            delay(3000);
         }
     }
 
