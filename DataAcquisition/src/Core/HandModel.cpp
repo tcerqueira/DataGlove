@@ -1,4 +1,4 @@
-#include "Hand.h"
+#include "HandModel.h"
 #include "Utils/Utils.h"
 
 static constexpr float GRAVITY = 9.807f;
@@ -6,13 +6,11 @@ static constexpr float GRAVITY = 9.807f;
 static Quaternion orientationFromGravity(const Eigen::Vector3d &gravity);
 static Eigen::Vector3d anglesFromGravity(const Eigen::Vector3d &gravity);
 
-Hand::Hand()
+HandModel::HandModel()
 {
-    for(uint8_t i=0; i < 16; i++)
-        joints[i] = Quaternion();
     // Wrist JSON
     JsonObject wristObj = encoded.createNestedObject("wrist");
-    pose.wrist.serialize(wristObj);
+    hand.wrist.serialize(wristObj);
     // Fingers JSON
     JsonArray fingersArr = encoded.createNestedArray("fingers");
     for(uint8_t i=0; i < 5; i++)
@@ -21,38 +19,68 @@ Hand::Hand()
         JsonArray jointsArr = fingerObj.createNestedArray("joints");
         for(uint8_t j=0; j < 3; j++)
         {
-            pose.fingers[i].joints[j].serialize(jointsArr);
+            hand.fingers[i].joints[j].serialize(jointsArr);
         }
     }
 }
 
-Finger& Hand::getFinger(uint8_t index)
+HandModel::FingerPose& HandModel::getFinger(uint8_t index)
 {
-    return pose.fingers[index];
+    return hand.fingers[index];
 }
 
-Quaternion& Hand::getWrist()
+Quaternion& HandModel::getWrist()
 {
-    return pose.wrist;
+    return hand.wrist;
 }
 
-Quaternion& Hand::getJoint(uint8_t index)
+Quaternion& HandModel::getJoint(uint8_t index)
 {
     return joints[index];
 }
 
-void Hand::serialize(String &outStr)
+HandModel::FingerPose& HandModel::getOffsetFinger(uint8_t index)
 {
-    encoded["wrist"]["x"] = pose.wrist.x();
-    encoded["wrist"]["y"] = pose.wrist.y();
-    encoded["wrist"]["z"] = pose.wrist.z();
-    encoded["wrist"]["w"] = pose.wrist.w();
+    return hand_offset.fingers[index];
+}
+
+Quaternion& HandModel::getOffsetWrist()
+{
+    return hand_offset.wrist;
+}
+
+Quaternion& HandModel::getOffset(uint8_t index)
+{
+    return joints_offset[index];
+}
+
+
+void HandModel::serialize(String &outStr)
+{
+    union HandOrientation
+    {
+        HandModel::HandPose hand;
+        Quaternion joints[16];
+
+        HandOrientation() {}
+    } hand_corr;
+
+    for(uint8_t i=0; i < 16; i++)
+    {
+        hand_corr.joints[i] = joints_offset[i] * joints[i];
+    }
+
+    encoded["wrist"]["x"] = hand_corr.hand.wrist.x();
+    encoded["wrist"]["y"] = hand_corr.hand.wrist.y();
+    encoded["wrist"]["z"] = hand_corr.hand.wrist.z();
+    encoded["wrist"]["w"] = hand_corr.hand.wrist.w();
 
     JsonArray fingersArr = encoded["fingers"];
+    Quaternion corr_wrist_inv = hand_corr.hand.wrist.inverse();
     for(uint8_t i=0; i < 5; i++)
     {
         JsonArray jointsArr = fingersArr[i]["joints"];
-        Quaternion wrist_diff = pose.wrist.inverse() * pose.fingers[i].joints[0];
+        Quaternion wrist_diff = corr_wrist_inv * hand_corr.hand.fingers[i].joints[0];
         jointsArr[0]["x"] = wrist_diff.x();
         jointsArr[0]["y"] = wrist_diff.y();
         jointsArr[0]["z"] = wrist_diff.z();
@@ -61,7 +89,7 @@ void Hand::serialize(String &outStr)
         for(uint8_t j=1; j < 3; j++)
         {
             // Relative rotation between finger joints
-            Quaternion diff = pose.fingers[i].joints[j-1].inverse() * pose.fingers[i].joints[j];
+            Quaternion diff = hand_corr.hand.fingers[i].joints[j-1].inverse() * hand_corr.hand.fingers[i].joints[j];
             jointsArr[j]["x"] = diff.x();
             jointsArr[j]["y"] = diff.y();
             jointsArr[j]["z"] = diff.z();
@@ -70,7 +98,6 @@ void Hand::serialize(String &outStr)
     }
 
     serializeJson(encoded, outStr);
-    // encoded["debug"] = "";
 }
 
 inline Quaternion orientationFromGravity(const Eigen::Vector3d &gravity)
@@ -91,17 +118,27 @@ inline Eigen::Vector3d anglesFromGravity(const Eigen::Vector3d &gravity)
     return Eigen::Vector3d(ex, ey, ez);
 }
 
-void Hand::initializeJoint(uint8_t index, const Eigen::Vector3d &gravity)
+void HandModel::initializeJoint(uint8_t index, const Eigen::Vector3d &gravity)
 {
     initializeJoint(joints[index], gravity);
 }
 
-void Hand::initializeJoint(Quaternion &joint, const Eigen::Vector3d &gravity)
+void HandModel::initializeJoint(Quaternion &joint, const Eigen::Vector3d &gravity)
 {
     joint = orientationFromGravity(gravity);
 }
 
-void Hand::updateJoint(Quaternion &joint, const Eigen::Vector3d &dEuler, const Eigen::Vector3d &gravity)
+void HandModel::offsetJoint(uint8_t index, const Eigen::Vector3d &gravity)
+{
+    joints_offset[index] = orientationFromGravity(gravity).inverse();
+}
+
+void HandModel::offsetJoint(uint8_t index, const Quaternion &orientation)
+{
+    joints_offset[index] = orientation.inverse();
+}
+
+void HandModel::updateJoint(Quaternion &joint, const Eigen::Vector3d &dEuler, const Eigen::Vector3d &gravity)
 {
     // https://ahrs.readthedocs.io/en/latest/filters.html
     // https://www.mdpi.com/1424-8220/15/8/19302/htm
@@ -133,23 +170,23 @@ void Hand::updateJoint(Quaternion &joint, const Eigen::Vector3d &dEuler, const E
     joint = predicted_w * dqacc;
 }
 
-void Hand::updateJoint(uint8_t index, const Eigen::Vector3d &dEuler, const Eigen::Vector3d &gravity)
+void HandModel::updateJoint(uint8_t index, const Eigen::Vector3d &dEuler, const Eigen::Vector3d &gravity)
 {
     updateJoint(joints[index], dEuler, gravity);
 }
 
-void Hand::updateFinger(FingerId id, const Eigen::Vector3d dEuler[], const Eigen::Vector3d gravity[])
+void HandModel::updateFinger(FingerId id, const Eigen::Vector3d dEuler[], const Eigen::Vector3d gravity[])
 {
-    Finger &finger = pose.fingers[id];
+    FingerPose &finger = hand.fingers[id];
     for(uint8_t i = 0; i < 3; i++)
     {
         updateJoint(finger.joints[i], dEuler[i], gravity[i]);
     } 
 }
 
-void Hand::updateWrist(const Eigen::Vector3d &dEuler, const Eigen::Vector3d &gravity)
+void HandModel::updateWrist(const Eigen::Vector3d &dEuler, const Eigen::Vector3d &gravity)
 {
-    updateJoint(pose.wrist, dEuler, gravity);
+    updateJoint(hand.wrist, dEuler, gravity);
 }
 
     // joint *= Quaternion(dEuler);
@@ -191,7 +228,7 @@ void Hand::updateWrist(const Eigen::Vector3d &dEuler, const Eigen::Vector3d &gra
     // double ey = (e.y() + dEuler.y()) * (1-ADAPTIVE_GAIN) + a.y() * ADAPTIVE_GAIN;
     // double ez = e.z() + dEuler.z();
     // std::stringstream ss; ss << ez;
-    // if(&joint == &pose.wrist)
+    // if(&joint == &hand.wrist)
     //     debug(ss.str().c_str());
 
     // joint = Quaternion(ex, ey, ez);
@@ -239,7 +276,7 @@ void Hand::updateWrist(const Eigen::Vector3d &dEuler, const Eigen::Vector3d &gra
     // Quaternion accel_q = gravity_q * Quaternion(0, 0, yaw);
 
     // // std::stringstream ss; ss << yaw;
-    // // if(&joint == &pose.wrist)
+    // // if(&joint == &hand.wrist)
     // //     debug(ss.str().c_str());
 
     // joint = gyro_q * (1-ADAPTIVE_GAIN) + accel_q * ADAPTIVE_GAIN;

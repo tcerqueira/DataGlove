@@ -66,9 +66,9 @@ void Imu::calibrate()
     // accel_offset[1] = (accel_mean[1] * accel_ratio) - accel_mean[1];
     // accel_offset[2] = (accel_mean[2] * accel_ratio) - accel_mean[2];
 
-    accel_offset[0] = mean(ax, cycles);
-    accel_offset[1] = mean(ay, cycles);
-    accel_offset[2] = mean(az, cycles) + GRAVITY;
+    // accel_offset[0] = mean(ax, cycles);
+    // accel_offset[1] = mean(ay, cycles);
+    // accel_offset[2] = mean(az, cycles) + GRAVITY;
     
     gyro_offset[0] = mean(gx, cycles);
     gyro_offset[1] = mean(gy, cycles);

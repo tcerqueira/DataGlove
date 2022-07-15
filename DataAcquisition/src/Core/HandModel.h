@@ -3,15 +3,21 @@
 #include "ArduinoJson.hpp"
 #include <stdint.h>
 
-struct Finger {
-    Quaternion joints[3];
-};
-
-class Hand
+class HandModel
 {
 public:
     enum FingerId {
         THUMB = 0, INDEX, MIDDLE, RING, PINKY
+    };
+
+    struct FingerPose {
+        Quaternion joints[3];
+    };
+
+    struct HandPose
+    {
+        Quaternion wrist;
+        FingerPose fingers[5];
     };
 
     static constexpr float STATIC_GAIN = 1-.995f;
@@ -19,15 +25,23 @@ public:
     static constexpr float ERROR_T2 = .2f;
 
 public:
-    Hand();
-    Finger& getFinger(uint8_t index);
+    HandModel();
+
+    FingerPose& getFinger(uint8_t index);
     Quaternion& getWrist();
     Quaternion& getJoint(uint8_t index);
+
+    FingerPose& getOffsetFinger(uint8_t index);
+    Quaternion& getOffsetWrist();
+    Quaternion& getOffset(uint8_t index);
 
     void serialize(String &outStr);
 
     void initializeJoint(uint8_t index, const Eigen::Vector3d &gravity);
     void initializeJoint(Quaternion &joint, const Eigen::Vector3d &gravity);
+
+    void offsetJoint(uint8_t index, const Eigen::Vector3d &gravity);
+    void offsetJoint(uint8_t index, const Quaternion &orientation);
 
     void updateFinger(FingerId id, const Eigen::Vector3d dEuler[], const Eigen::Vector3d gravity[]);
     void updateWrist(const Eigen::Vector3d &dEuler, const Eigen::Vector3d &gravity);
@@ -36,16 +50,17 @@ public:
     void updateJoint(Quaternion &joint, const Eigen::Vector3d &dEuler, const Eigen::Vector3d &gravity);
 
 private:
-    struct Pose
+
+    union
     {
-        Quaternion wrist;
-        Finger fingers[5];
+        HandPose hand;
+        Quaternion joints[16];
     };
 
     union
     {
-        Pose pose;
-        Quaternion joints[16];
+        HandPose hand_offset;
+        Quaternion joints_offset[16];
     };
     StaticJsonDocument<2048> encoded;
 };

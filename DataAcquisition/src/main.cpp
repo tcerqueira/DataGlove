@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include "Utils/Utils.h"
-#include "Core/Hand.h"
+#include "Core/HandModel.h"
 #include "Core/Calibration.h"
 #include "Drivers/Button.hpp"
 #include "Drivers/Imu.h"
@@ -45,7 +45,7 @@ uint8_t joint_map[NUMIMUS] = { 0,1,2,3,4,5,7,8,10,11,13,14 };
 I2CMux tca9548a(0x70);
 Button<HIGH> rstBtn(5);     // pin 5, 50ms debounce delay
 
-Hand hand;
+HandModel hand;
 
 void setup()
 {
@@ -125,11 +125,17 @@ void loop()
     for(uint8_t i=1; i < 5; i++)
     {
         // Find the angle between phalange 0 and 1 rotate last phalange by a ratio of that amount
-        Finger& finger = hand.getFinger(i);
-        Quaternion diff = finger.joints[0].inverse() * finger.joints[1];
+        HandModel::FingerPose& finger = hand.getFinger(i);
+        HandModel::FingerPose& finger_offset = hand.getOffsetFinger(i);
+        HandModel::FingerPose finger_corr = {
+            finger_offset.joints[0] * finger.joints[0],
+            finger_offset.joints[1] * finger.joints[1],
+            finger_offset.joints[2] * finger.joints[2]
+        };
+        Quaternion diff = finger_corr.joints[0].inverse() * finger_corr.joints[1];
 
         const double angle = 65/115.0 * (-2 * atan2(diff.vec().norm(), diff.w()));
-        Quaternion orientation = finger.joints[1] * Eigen::AngleAxisd(angle, Eigen::Vector3d::UnitY());
+        Quaternion orientation = finger_corr.joints[1] * Eigen::AngleAxisd(angle, Eigen::Vector3d::UnitY());
 
         finger.joints[2] = orientation;
     }
@@ -158,7 +164,9 @@ void init_hand()
         const double ax = -imus[i].accel_x();
         const double ay = -imus[i].accel_y();
         const double az = -imus[i].accel_z();
-        hand.initializeJoint(i, Eigen::Vector3d(ax, ay, az));
+        Eigen::Vector3d gravity = {ax, ay, az};
+        hand.initializeJoint(joint_map[i], gravity);
+        hand.offsetJoint(joint_map[i], gravity);
     }
 }
 
