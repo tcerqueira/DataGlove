@@ -8,6 +8,12 @@ static Eigen::Vector3d anglesFromGravity(const Eigen::Vector3d &gravity);
 
 HandModel::HandModel()
 {
+    for (uint8_t i=0; i < 16; i++)
+        joints[i] = Quaternion();
+    
+    for (uint8_t i=0; i < 16; i++)
+        joints_offset[i] = Quaternion();
+    
     // Wrist JSON
     JsonObject wristObj = encoded.createNestedObject("wrist");
     hand.wrist.serialize(wristObj);
