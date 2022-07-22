@@ -1,5 +1,9 @@
 #pragma once
 
+#define GX_OFFSET(id) IMU##id##_GX_OFFSET
+#define GY_OFFSET(id) IMU##id##_GY_OFFSET
+#define GZ_OFFSET(id) IMU##id##_GZ_OFFSET
+
 #define SAMPLE_ID 10000
 
 #if SAMPLE_ID == 10000
